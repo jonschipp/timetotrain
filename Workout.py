@@ -19,9 +19,11 @@ class Workout:
           weeks = self.weeks
 
       # Weeks
-      for week in range(1, weeks):
+      for week in range(1, weeks + 1):
          # Create a new sheet for each week
-         ws = self.wb.create_sheet(title=f"Week {week}")
+         sheet=f"Week {week}"
+         print(f"Writing sheet {sheet}")
+         ws = self.wb.create_sheet(title=sheet)
 
       # Remove default sheet
       del self.wb['Sheet']
@@ -45,7 +47,6 @@ class Workout:
               currentCell = currentSheet.cell(
                   row=begin_row, column=begin_col, value=f"Day {day}"
               )
-              self.test('Blah')
               self.set_style(currentSheet, currentCell, begin_col, colors.BLACK, 48, 'Helvetica')
               begin_col = begin_col + 2
 
@@ -53,6 +54,11 @@ class Workout:
 
 
   def generate_slots(self, slots: int) -> int:
+      # Add exercise slots e.g.
+      # [ Exercise 1 ]
+      # [ Exercise 2 ]
+      # [ Exercise 3 ]
+
       if not slots:
           # Set default
           slots = self.slots
@@ -60,19 +66,17 @@ class Workout:
       for sheet in self.wb.sheetnames:
           # Get sheet
           # Generate tables for days in sheet
-          begin_row = 6 # We start in the 4th row
+          begin_row = 6 # We start in the 6th row
           begin_col = 4 # We start in the 4th column i.e. D
+          currentSheet = self.wb[sheet]
           for slot in range(1, slots + 1):
-              # Add exercise slots e.g.
-              # [ Exercise 1 ]
-              # [ Exercise 2 ]
-              # [ Exercise 3 ]
-              currentSheet = self.wb[sheet]
+              print(f"Writing {sheet}:{begin_row}")
               currentCell = currentSheet.cell(
                   row=begin_row, column=begin_col, value=f"Exercise {slot}"
               )
-              self.test('Blah')
               self.set_style(currentSheet, currentCell, begin_col, colors.BLACK, 32, 'Helvetica')
+
+              begin_row = begin_row + 20
               begin_col = begin_col + 2
 
       return slots
@@ -84,28 +88,29 @@ class Workout:
           filename = 'workout.xlsx'
 
       self.wb.save(filename)
+      print(f"Writing program to {filename}")
       return filename
 
 
-def set_style(self, sheet: object, cell: object, col: int, color: str, size: int, font: str) -> object:
-      # Set style
-      font = Font(
-          name=font, size=size, bold=True, color=colors.WHITE
-      )
-      fill = PatternFill(
-          fill_type='solid', bgColor=color,
-      )
-      alignment = Alignment(
-          horizontal="center", vertical="center"
-      )
+  def set_style(self, sheet: object, cell: object, col: int, color: str, size: int, font: str) -> object:
+        # Set style
+        font = Font(
+            name=font, size=size, bold=True, color=colors.WHITE
+        )
+        fill = PatternFill(
+            fill_type='solid', bgColor=color,
+        )
+        alignment = Alignment(
+            horizontal="center", vertical="center"
+        )
 
-      sheet.column_dimensions[get_column_letter(col)].width = 60
-      cell.font = font
-      cell.fill = fill
-      cell.alignment = alignment
-      return cell
+        sheet.column_dimensions[get_column_letter(col)].width = 60
+        cell.font = font
+        cell.fill = fill
+        cell.alignment = alignment
+        return cell
 
-def test(self, msg: str) -> str:
-    if not msg:
-        msg = 'Test'
-    return msg
+  def test(self, msg: str) -> str:
+      if not msg:
+          msg = 'Test'
+      return msg
