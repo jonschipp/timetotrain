@@ -39,7 +39,7 @@ def main():
   w = Workout()
   w.generate_weeks(weeks=weeks)
   w.generate_frequency(frequency=frequency)
-  w.generate_slots(slots=slots)
+  w.generate_slots(slots=slots, frequency=frequency)
   w.save(filename=filename)
 
 if __name__ == "__main__":
