@@ -12,6 +12,7 @@ NEXT_SLOT_COLUMN = 7
 NEXT_DAY_COLUMN = 7
 NEXT_DIVIDE_COLUMN = 5
 HEADER_LENGTH = 5
+NUMBER_OF_SETS = 10
 
 class Workout:
 
@@ -61,7 +62,7 @@ class Workout:
 
               self.set_style(
                   currentSheet, currentCell, begin_col,
-                  color=colors.BLACK, size=42, width=20, font='Helvetica', bold=True
+                  bgColor=colors.BLACK, size=42, width=20, font='Helvetica', bold=True
               )
 
               begin_col += NEXT_DAY_COLUMN
@@ -92,6 +93,8 @@ class Workout:
               exercise_row = 8
               programming_row = 9
               notes_row = 10
+              volume_header_row = 11
+              volume_input_row = 12
 
               for slot in range(1, slots + 1):
                   print(f"Writing {sheet} row: {slot_row}, col: {slot_col}")
@@ -106,7 +109,7 @@ class Workout:
                   )
                   self.set_style(
                       currentSheet, currentCell, slot_col,
-                      color=colors.RED, size=32, width=20, font='Helvetica'
+                      bgColor=colors.RED, size=32, width=20, font='Helvetica'
                   )
                   slot_row += NEXT_SLOT_ROW
 
@@ -121,16 +124,29 @@ class Workout:
                   )
                   self.set_style(
                       currentSheet, currentCell, slot_col,
-                      color='00808080', size=24, width=20, font='Helvetica', bold=True
+                      bgColor='00808080', size=18, width=20, font='Helvetica', bold=False
                   )
                   exercise_row += NEXT_SLOT_ROW
 
+                  # [ Volume & Intensity ]
+                  # [        Notes       ]
                   self.generate_divide(programming_row, slot_col, currentSheet, heading='Volume & Intensity')
                   self.generate_divide(notes_row, slot_col, currentSheet, heading='Notes')
+                  currentSheet.row_dimensions[programming_row].height = 40
+                  currentSheet.row_dimensions[notes_row].height = 40
+                  programming_row += NEXT_SLOT_ROW
+                  notes_row += NEXT_SLOT_ROW
 
-                  programming_row += NEXT_SLOT_ROW                    
-                  notes_row += NEXT_SLOT_ROW                    
+                  # Add set header inputs
                   # [ Sets ] [ Weight ] [ Reps ] [ RIR ] [ RPE ] [ Intensity ]
+                  self.generate_volume_header(volume_header_row, slot_col, currentSheet)
+                  volume_header_row += NEXT_SLOT_ROW
+
+                  # Add set inputs
+                  # [ Set 1 ] [ <input> ]
+                  # [ Set 2 ] [ <input> ]
+                  self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=NUMBER_OF_SETS)
+                  volume_input_row += NEXT_SLOT_ROW
 
               # Start writing in column for next day
               slot_col += NEXT_SLOT_COLUMN
@@ -168,26 +184,88 @@ class Workout:
 
               self.set_style(
                   currentSheet, currentCell, col,
-                  color=colors.WHITE, size=12, width=20, font='Helvetica', bold=False
+                  bgColor=colors.WHITE, size=12, width=20, font='Helvetica', bold=False
               )
+
+              currentCell = currentSheet.cell(
+                  row=row, column=col+1
+              )
+
+              alignment = Alignment(
+                  wrap_text=True, horizontal="center", vertical="center"
+              )
+
+              currentCell.alignment = alignment
 
               return currentCell
 
 
-  def set_style(self, sheet: object, cell: object, col: int, color: str, size: int, width: int, font: str, bold: bool = False) -> object:
+  def generate_volume_header(self, row: int, col: int, currentSheet: object) -> object:
+              # [ Sets ] [ Weight ] [ Reps ] [ RIR ] [ RPE ] [ Intensity ]
+              headers = [ "Sets", "Weight", "Reps", "RIR", "RPE", "Int %" ]
+
+              for header in headers:
+                  currentCell = currentSheet.cell(
+                      row=row, column=col, value=f"{header}"
+                  )
+
+                  self.set_style(
+                      currentSheet, currentCell, col,
+                      bgColor=colors.WHITE, size=12, width=8, font='Helvetica', bold=True
+                  )
+                  # Set next column
+                  col += 1
+
+              return currentCell
+
+
+  def generate_volume_input(self, row: int, col: int, currentSheet: object, sets: int) -> object:
+
+              number_of_inputs = 5
+
+              alignment = Alignment(
+                  wrap_text=True, horizontal="center", vertical="center"
+              )
+
+              for number in range(1, sets + 1):
+
+                  currentCell = currentSheet.cell(
+                      row=row, column=col, value=f"Set {number}"
+                  )
+
+                  self.set_style(
+                      currentSheet, currentCell, col,
+                      bgColor=colors.WHITE, size=12, width=8, font='Helvetica', bold=False
+                  )
+
+                  for item in range(1, number_of_inputs + 1):
+
+                      currentCell = currentSheet.cell(
+                          row=row, column=col+item, value=""
+                      )
+
+                      currentCell.alignment = alignment
+
+                  # Set next column
+                  row += 1
+
+              return currentCell
+
+
+  def set_style(self, sheet: object, cell: object, col: int, bgColor: str, size: int, width: int, font: str, bold: bool = False) -> object:
         # Set style
         font = Font(
             name=font, size=size, bold=bold, color=colors.WHITE
         )
         fill = PatternFill(
-            fill_type='solid', bgColor=color,
+            fill_type='solid', bgColor=bgColor,
         )
+
         alignment = Alignment(
-            horizontal="center", vertical="center"
+            wrap_text=True, horizontal="center", vertical="center"
         )
 
         sheet.column_dimensions[get_column_letter(col)].width = width
-        #sheet.column_dimensions[get_column_letter(col)].height = height
         cell.font = font
         cell.fill = fill
         cell.alignment = alignment
