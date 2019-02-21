@@ -128,6 +128,8 @@ class Workout:
                   self.generate_divide(programming_row, slot_col, currentSheet, heading='Volume & Intensity')
                   self.generate_divide(notes_row, slot_col, currentSheet, heading='Notes')
 
+                  programming_row += NEXT_SLOT_ROW                    
+                  notes_row += NEXT_SLOT_ROW                    
                   # [ Sets ] [ Weight ] [ Reps ] [ RIR ] [ RPE ] [ Intensity ]
 
               # Start writing in column for next day
