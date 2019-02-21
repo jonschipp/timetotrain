@@ -3,6 +3,7 @@
 import argparse
 from Workout import Workout
 
+
 def usage():
   doc = '''
   Could not open file! Does it exist? Is it valid JSON?
