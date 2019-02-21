@@ -62,7 +62,8 @@ class Workout:
 
               self.set_style(
                   currentSheet, currentCell, begin_col,
-                  bgColor=colors.BLACK, size=42, width=20, font='Helvetica', bold=True
+                  fgColor=colors.WHITE, bgColor=colors.BLACK,
+                  size=42, width=20, font='Helvetica', bold=True
               )
 
               begin_col += NEXT_DAY_COLUMN
@@ -109,7 +110,8 @@ class Workout:
                   )
                   self.set_style(
                       currentSheet, currentCell, slot_col,
-                      bgColor=colors.RED, size=32, width=20, font='Helvetica'
+                      fgColor=colors.WHITE, bgColor=colors.BLACK,
+                      size=32, width=20, font='Helvetica'
                   )
                   slot_row += NEXT_SLOT_ROW
 
@@ -124,7 +126,8 @@ class Workout:
                   )
                   self.set_style(
                       currentSheet, currentCell, slot_col,
-                      bgColor='00808080', size=18, width=20, font='Helvetica', bold=False
+                      fgColor=colors.WHITE, bgColor=colors.BLACK,
+                      size=18, width=20, font='Helvetica', bold=False
                   )
                   exercise_row += NEXT_SLOT_ROW
 
@@ -184,7 +187,8 @@ class Workout:
 
               self.set_style(
                   currentSheet, currentCell, col,
-                  bgColor=colors.WHITE, size=12, width=20, font='Helvetica', bold=False
+                  fgColor=colors.WHITE, bgColor=colors.BLACK,
+                  size=12, width=20, font='Helvetica', bold=False
               )
 
               currentCell = currentSheet.cell(
@@ -211,7 +215,8 @@ class Workout:
 
                   self.set_style(
                       currentSheet, currentCell, col,
-                      bgColor=colors.WHITE, size=12, width=8, font='Helvetica', bold=True
+                      fgColor=colors.WHITE, bgColor=colors.BLACK,
+                      size=12, width=8, font='Helvetica', bold=True
                   )
                   # Set next column
                   col += 1
@@ -235,7 +240,8 @@ class Workout:
 
                   self.set_style(
                       currentSheet, currentCell, col,
-                      bgColor=colors.WHITE, size=12, width=8, font='Helvetica', bold=False
+                      fgColor=colors.WHITE, bgColor=colors.BLACK,
+                      size=12, width=8, font='Helvetica', bold=False
                   )
 
                   for item in range(1, number_of_inputs + 1):
@@ -252,15 +258,14 @@ class Workout:
               return currentCell
 
 
-  def set_style(self, sheet: object, cell: object, col: int, bgColor: str, size: int, width: int, font: str, bold: bool = False) -> object:
+  def set_style(self, sheet: object, cell: object, col: int, fgColor: str, bgColor: str, size: int, width: int, font: str, bold: bool = False) -> object:
         # Set style
         font = Font(
-            name=font, size=size, bold=bold, color=colors.WHITE
+            name=font, size=size, bold=bold, color=fgColor
         )
         fill = PatternFill(
-            fill_type='solid', bgColor=bgColor,
+            fill_type='solid', fgColor=bgColor,
         )
-
         alignment = Alignment(
             wrap_text=True, horizontal="center", vertical="center"
         )
