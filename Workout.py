@@ -3,15 +3,15 @@ from openpyxl.styles import colors
 from openpyxl.styles import Alignment, Border, Color, Font, PatternFill, Protection, Side
 from openpyxl.utils import get_column_letter, column_index_from_string
 
-BEGIN_FREQ_ROW = 4
-BEGIN_FREQ_COL = 2 # We start in the 2nd column i.e. B
-BEGIN_SLOT_COLUMN = 2 # We start in the 2nd column i.e. B
+COLUMN_LENGTH = 6 # The length of each day/slot, determines overall alignment
+BEGIN_COLUMN = 2 #  We start in the 2nd column i.e. B for each day/slot
+BEGIN_FREQ_ROW = 4 # We start at row 4 for each day/slot
 BEGIN_SLOT_ROW = 6
 NEXT_SLOT_ROW = 20
-NEXT_SLOT_COLUMN = 7
-NEXT_DAY_COLUMN = 7
-NEXT_DIVIDE_COLUMN = 5
-HEADER_LENGTH = 5
+NEXT_COLUMN = COLUMN_LENGTH + 2 # Where the next column begins for each day/slot
+COLOR_LIGHTBLACK='00282828'
+COLOR_DARKGREY='00505050'
+COLOR_DARKRED='00600000'
 
 class Workout:
 
@@ -50,7 +50,7 @@ class Workout:
           # Get sheet
           # Generate tables for days in sheet
           begin_row = BEGIN_FREQ_ROW
-          begin_col = BEGIN_FREQ_COL
+          begin_col = BEGIN_COLUMN
           currentSheet = self.wb[sheet]
 
           for day in range(1, frequency + 1):
@@ -62,11 +62,11 @@ class Workout:
 
               self.set_style(
                   currentSheet, currentCell, begin_col,
-                  fgColor=colors.WHITE, bgColor=colors.BLACK,
+                  fgColor=colors.WHITE, bgColor=COLOR_LIGHTBLACK,
                   size=42, width=20, font='Helvetica', bold=True
               )
 
-              begin_col += NEXT_DAY_COLUMN
+              begin_col += NEXT_COLUMN
 
       return frequency
 
@@ -90,7 +90,7 @@ class Workout:
           # Generate tables for days in sheet
           currentSheet = self.wb[sheet]
 
-          slot_col = BEGIN_SLOT_COLUMN
+          slot_col = BEGIN_COLUMN
 
           for day in range(1, frequency + 1):
 
@@ -102,7 +102,7 @@ class Workout:
               volume_input_row = 12
 
               for slot in range(1, slots + 1):
-                  print(f"Writing {sheet} row: {slot_row}, col: {slot_col}")
+                  #print(f"Writing {sheet} row: {slot_row}, col: {slot_col}")
 
                   # Add exercise slot header
                   # [    Day 1   ]
@@ -114,7 +114,7 @@ class Workout:
                   )
                   self.set_style(
                       currentSheet, currentCell, slot_col,
-                      fgColor=colors.WHITE, bgColor=colors.BLACK,
+                      fgColor=colors.WHITE, bgColor=COLOR_DARKGREY,
                       size=32, width=20, font='Helvetica'
                   )
                   slot_row += NEXT_SLOT_ROW
@@ -130,7 +130,7 @@ class Workout:
                   )
                   self.set_style(
                       currentSheet, currentCell, slot_col,
-                      fgColor=colors.WHITE, bgColor=colors.BLACK,
+                      fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
                       size=18, width=20, font='Helvetica', bold=False
                   )
                   exercise_row += NEXT_SLOT_ROW
@@ -145,7 +145,7 @@ class Workout:
                   notes_row += NEXT_SLOT_ROW
 
                   # Add set header inputs
-                  # [ Sets ] [ Weight ] [ Reps ] [ RIR ] [ RPE ] [ Intensity ]
+                  # [ Sets ] [ Weight ] [ Reps ] [ RIR ] [ RPE ] [ Avg Vel ] [ Intensity ]
                   self.generate_volume_header(volume_header_row, slot_col, currentSheet)
                   volume_header_row += NEXT_SLOT_ROW
 
@@ -156,7 +156,7 @@ class Workout:
                   volume_input_row += NEXT_SLOT_ROW
 
               # Start writing in column for next day
-              slot_col += NEXT_SLOT_COLUMN
+              slot_col += NEXT_COLUMN
       return slots
 
 
@@ -165,7 +165,7 @@ class Workout:
               # [ Day 1 ]
               currentSheet.merge_cells(
                   start_row=row, end_row=row,
-                  start_column=col, end_column=col+HEADER_LENGTH
+                  start_column=col, end_column=col+COLUMN_LENGTH
               )
 
               currentCell = currentSheet.cell(
@@ -186,12 +186,12 @@ class Workout:
               )
 
               currentSheet.merge_cells(
-                  start_row=row, end_row=row, start_column=col+1, end_column=col+NEXT_DIVIDE_COLUMN
+                  start_row=row, end_row=row, start_column=col+1, end_column=col+COLUMN_LENGTH
               )
 
               self.set_style(
                   currentSheet, currentCell, col,
-                  fgColor=colors.WHITE, bgColor=colors.BLACK,
+                  fgColor=colors.WHITE, bgColor=COLOR_DARKGREY,
                   size=12, width=20, font='Helvetica', bold=False
               )
 
@@ -209,8 +209,8 @@ class Workout:
 
 
   def generate_volume_header(self, row: int, col: int, currentSheet: object) -> object:
-              # [ Sets ] [ Weight ] [ Reps ] [ RIR ] [ RPE ] [ Intensity ]
-              headers = [ "Sets", "Weight", "Reps", "RIR", "RPE", "Int %" ]
+              # [ Sets ] [ Weight ] [ Reps ] [ RIR ] [ RPE ] [ Avg Vel ] [ Intensity ]
+              headers = [ "Sets", "Weight", "Reps", "RIR", "RPE",  "Avg Vel", "Int %" ]
 
               for header in headers:
                   currentCell = currentSheet.cell(
@@ -219,7 +219,7 @@ class Workout:
 
                   self.set_style(
                       currentSheet, currentCell, col,
-                      fgColor=colors.WHITE, bgColor=colors.BLACK,
+                      fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
                       size=12, width=8, font='Helvetica', bold=True
                   )
                   # Set next column
@@ -244,7 +244,7 @@ class Workout:
 
                   self.set_style(
                       currentSheet, currentCell, col,
-                      fgColor=colors.WHITE, bgColor=colors.BLACK,
+                      fgColor=colors.WHITE, bgColor=COLOR_DARKGREY,
                       size=12, width=8, font='Helvetica', bold=False
                   )
 
