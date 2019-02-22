@@ -12,15 +12,15 @@ NEXT_SLOT_COLUMN = 7
 NEXT_DAY_COLUMN = 7
 NEXT_DIVIDE_COLUMN = 5
 HEADER_LENGTH = 5
-NUMBER_OF_SETS = 10
 
 class Workout:
 
-  def __init__(self, weeks=8, frequency=3, slots=3):
+  def __init__(self, weeks=8, frequency=3, slots=3, sets=10):
     self.wb = Workbook()
     self.weeks = weeks     # How many weeks for the progrqm
     self.frequency = frequency # How many days per week
     self.slots = slots     # How many slots per day
+    self.sets = sets     # How many sets per slot
 
 
   def generate_weeks(self, weeks: int) -> list:
@@ -71,7 +71,7 @@ class Workout:
       return frequency
 
 
-  def generate_slots(self, slots: int, frequency: int) -> int:
+  def generate_slots(self, slots: int, sets: int, frequency: int) -> int:
       # Add exercise slots to chosen frequency e.g.
       if not slots:
           # Set default
@@ -80,6 +80,10 @@ class Workout:
       if not frequency:
           # Set default
           frequency = self.frequency
+
+      if not sets:
+          # Set default
+          sets = self.sets
 
       for sheet in self.wb.sheetnames:
           # Get sheet
@@ -148,7 +152,7 @@ class Workout:
                   # Add set inputs
                   # [ Set 1 ] [ <input> ]
                   # [ Set 2 ] [ <input> ]
-                  self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=NUMBER_OF_SETS)
+                  self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=sets)
                   volume_input_row += NEXT_SLOT_ROW
 
               # Start writing in column for next day

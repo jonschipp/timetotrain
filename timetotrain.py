@@ -21,26 +21,28 @@ def usage():
 
 def arguments():
   parser = argparse.ArgumentParser(description='A generator for customizable workout templates using spreadsheets.')
-  parser.add_argument("-W", "--weeks",     type=int, help="Number of weeks in the program, def: 8")
-  parser.add_argument("-F", "--frequency", type=int, help="Training frequency in number of days per week, def: 3")
-  parser.add_argument("-S", "--slots",     type=int, help="Number of exercises slots per workout, def: 3")
-  parser.add_argument("-f", "--filename", type=str, help="Spreadsheet output filename, def: workout.xlsx")
+  parser.add_argument("-W", "--weeks",     type=int, help="Number of weeks in the program (def: 8)")
+  parser.add_argument("-F", "--frequency", type=int, help="Training frequency in number of days per week (def: 3)")
+  parser.add_argument("-S", "--slots",     type=int, help="Number of exercises slots per workout (def: 3)")
+  parser.add_argument("-s", "--sets",     type=int, help="Number of sets per slot (def: 10)")
+  parser.add_argument("-f", "--filename", type=str, help="Spreadsheet output filename, (def: workout.xlsx)")
   args = parser.parse_args()
 
   weeks = args.weeks
   frequency = args.frequency
   slots = args.slots
+  sets = args.sets
   filename = args.filename
 
-  return(weeks, frequency, slots, filename)
+  return(weeks, frequency, slots, sets, filename)
 
 def main():
-  weeks, frequency, slots, filename = arguments()
+  weeks, frequency, slots, sets, filename = arguments()
 
   w = Workout()
   w.generate_weeks(weeks=weeks)
   w.generate_frequency(frequency=frequency)
-  w.generate_slots(slots=slots, frequency=frequency)
+  w.generate_slots(slots=slots, sets=sets, frequency=frequency)
   w.save(filename=filename)
 
 if __name__ == "__main__":
