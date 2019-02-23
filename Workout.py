@@ -359,9 +359,9 @@ class Workout:
               col += 1
 
               # Get first row of user inputs [ Load ] [ Reps ], etc.
-              begin_input_row = row - sets
+              begin_input_row = row - sets - 1
               # Get last input row [ Load ] [ Reps ], etc.
-              end_input_row = row - 1
+              end_input_row = row - 2
 
               for input_row in range(begin_input_row, begin_input_row + sets):
 
