@@ -2,6 +2,7 @@ from openpyxl import Workbook
 from openpyxl.styles import colors
 from openpyxl.styles import Alignment, Border, Color, Font, PatternFill, Protection, Side
 from openpyxl.utils import get_column_letter, column_index_from_string
+from openpyxl.formula.translate import Translator
 
 COLUMN_LENGTH = 6 # The length of each day/slot, determines overall alignment
 BEGIN_COLUMN = 2 #  We start in the 2nd column i.e. B for each day/slot
@@ -224,7 +225,7 @@ class Workout:
                   self.set_style(
                       currentSheet, currentCell, col,
                       fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
-                      size=12, width=8, font='Helvetica', bold=True
+                      size=12, width=15, font='Helvetica', bold=True
                   )
                   # Set next column
                   col += 1
@@ -264,24 +265,30 @@ class Workout:
 
   def generate_averages_row(self, row: int, col: int, currentSheet: object, sets: int) -> object:
 
-              AVERAGE_FORMULAS = [""]
-
               currentCell = currentSheet.cell(
-                  row=row, column=col, value=f"Avgs"
+                  row=row, column=col, value=f"Averages"
               )
 
               self.set_style(
                   currentSheet, currentCell, col,
                   fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
-                  size=12, width=8, font='Helvetica', bold=True
+                  size=12, width=15, font='Helvetica', bold=True
               )
 
               col += 1
 
-              for i in AVERAGE_FORMULAS:
+              # Get first row of user inputs [ Load ] [ Reps ], etc.
+              begin_input_row = row - sets
+              # Get last input row [ Load ] [ Reps ], etc.
+              end_input_row = row - 1
+
+              for input_row in range(begin_input_row, begin_input_row + sets):
+
+                  col_letter = get_column_letter(col)
 
                   currentCell = currentSheet.cell(
-                      row=row, column=col, value=f"{i}"
+                      row=row, column=col,
+                      value=f"=IFERROR(AVERAGE({col_letter}{input_row}:{col_letter}{end_input_row}), \"...\")"
                   )
 
                   self.set_style(
@@ -294,6 +301,8 @@ class Workout:
 
                   # Set next column
                   col += 1
+                  if col == NEXT_COLUMN + 1:
+                      break
 
 
   def set_style(self, sheet: object, cell: object, col: int, fgColor: str, bgColor: str, size: int, width: int, font: str, bold: bool = False) -> object:
