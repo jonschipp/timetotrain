@@ -160,7 +160,10 @@ class Workout:
                   # [ Set 1 ] [ <input> ]
                   # [ Set 2 ] [ <input> ]
                   self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=sets)
+                  # TODO: We should not be be referencing numbers, it's barely readable
+                  self.generate_rir_to_rpe(volume_input_row, slot_col+4, currentSheet, sets=sets)
                   volume_input_row += NEXT_SLOT_ROW
+
 
                   # Add averages row
                   # [ Avgs ] [ <formula> ], etc.
@@ -258,6 +261,27 @@ class Workout:
                       currentCell.alignment = ALIGNMENT
 
                   # Set next column
+                  row += 1
+
+              return currentCell
+
+  def generate_rir_to_rpe(self, row: int, col: int, currentSheet: object, sets: int) -> object:
+              # [ RIR ] to [ RPE ]
+              # [  2  ]    [  8  ]
+              # e.g. #IF(E12="", "...", ABS(IFERROR(E12−10,"")))
+
+              # The column before contains RPE
+              col_rpe_letter = get_column_letter(col-1)
+
+              for input_row in range(row, row + sets):
+
+                  currentCell = currentSheet.cell(
+                      row=row, column=col,
+                      value=f"=IF({col_rpe_letter}{input_row}=\"\", \"...\", ABS(IFERROR({col_rpe_letter}{input_row}−10, \"\")))"
+                  )
+
+                  currentCell.alignment = ALIGNMENT
+
                   row += 1
 
               return currentCell
