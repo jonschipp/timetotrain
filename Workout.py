@@ -4,16 +4,21 @@ from openpyxl.styles import Alignment, Border, Color, Font, PatternFill, Protect
 from openpyxl.utils import get_column_letter, column_index_from_string
 from openpyxl.formula.translate import Translator
 
+# TODO: Calculate these numbers in dynamically
 COLUMN_LENGTH = 6 # The length of each day/slot, determines overall alignment
 BEGIN_COLUMN = 2 #  We start in the 2nd column i.e. B for each day/slot
 BEGIN_FREQ_ROW = 4 # We start at row 4 for each day/slot
 BEGIN_SLOT_ROW = 6
 NEXT_SLOT_ROW = 20
 NEXT_COLUMN = COLUMN_LENGTH + 2 # Where the next column begins for each day/slot
+# TODO: Move this into a style module
 COLOR_LIGHTBLACK='00282828'
 COLOR_DARKGREY='00505050'
 COLOR_DARKRED='00600000'
+# TODO: Make these user defineable
 VOLUME_HEADERS = [ "Sets", "Weight", "Reps", "RIR", "RPE",  "Avg Vel", "Int %" ]
+
+# TODO: Move this into a style module
 ALIGNMENT = Alignment(
     wrap_text=True, horizontal="center", vertical="center"
 )
@@ -100,6 +105,7 @@ class Workout:
 
           for day in range(1, frequency + 1):
 
+              # TODO: Determining placement can be done better than this
               slot_row = BEGIN_SLOT_ROW
               exercise_row = BEGIN_SLOT_ROW + 2
               programming_row = BEGIN_SLOT_ROW + 3
@@ -146,6 +152,7 @@ class Workout:
                   # [        Notes       ]
                   self.generate_divide(programming_row, slot_col, currentSheet, heading='Volume & Intensity')
                   self.generate_divide(notes_row, slot_col, currentSheet, heading='Notes')
+                  # TODO: Row height can be set in a better place
                   currentSheet.row_dimensions[programming_row].height = 40
                   currentSheet.row_dimensions[notes_row].height = 40
                   programming_row += NEXT_SLOT_ROW
