@@ -17,7 +17,7 @@ COLOR_LIGHTBLACK='00282828'
 COLOR_DARKGREY='00505050'
 COLOR_DARKRED='00600000'
 # TODO: Make these user defineable
-VOLUME_HEADERS = [ "Sets", "Weight", "Reps", "RIR", "RPE",  "Avg Vel", "Int %" ]
+VOLUME_HEADERS = [ "Sets", "Load", "Reps", "RIR", "RPE",  "Avg Vel", "Int %" ]
 
 # TODO: Move this into a style module
 ALIGNMENT = Alignment(
@@ -114,6 +114,7 @@ class Workout:
               volume_header_row = BEGIN_SLOT_ROW + 5
               volume_input_row = BEGIN_SLOT_ROW + 6
               averages_row = volume_input_row + sets
+              sums_row = volume_input_row + sets + 1
 
               for slot in range(1, slots + 1):
                   #print(f"Writing {sheet} row: {slot_row}, col: {slot_col}")
@@ -149,9 +150,9 @@ class Workout:
                   )
                   exercise_row += NEXT_SLOT_ROW
 
-                  # [ Volume & Intensity ]
+                  # [       Program      ]
                   # [        Notes       ]
-                  self.generate_divide(programming_row, slot_col, currentSheet, heading='Volume & Intensity')
+                  self.generate_divide(programming_row, slot_col, currentSheet, heading='Program')
                   self.generate_divide(notes_row, slot_col, currentSheet, heading='Notes')
                   # TODO: Row height can be set in a better place
                   currentSheet.row_dimensions[programming_row].height = 40
@@ -160,7 +161,7 @@ class Workout:
                   notes_row += NEXT_SLOT_ROW
 
                   # Add set header inputs
-                  # [ Sets ] [ Weight ] [ Reps ] [ RIR ] [ RPE ] [ Avg Vel ] [ Intensity ]
+                  # [ Sets ] [ Load ] [ Reps ] [ RIR ] [ RPE ] [ Avg Vel ] [ Intensity ]
                   self.generate_volume_header(volume_header_row, slot_col, currentSheet)
                   volume_header_row += NEXT_SLOT_ROW
 
@@ -177,6 +178,11 @@ class Workout:
                   # [ Avgs ] [ <formula> ], etc.
                   self.generate_averages_row(averages_row, slot_col, currentSheet, sets=sets)
                   averages_row += NEXT_SLOT_ROW
+
+                  # Add averages row
+                  # [ Sums ] [ <formula> ], etc.
+                  self.generate_sums_row(sums_row, slot_col, currentSheet, sets=sets)
+                  sums_row += NEXT_SLOT_ROW
 
               # Start writing in column for next day
               slot_col += NEXT_COLUMN
@@ -200,9 +206,9 @@ class Workout:
 
   def generate_divide(self, row: int, col: int, currentSheet: object, heading: str = 'Header') -> object:
               # Create divide with header and input
-              # [        ][         ]
-              # [ Volume ][ <input> ]
-              # [        ][         ]
+              # [         ][         ]
+              # [ Program ][ <input> ]
+              # [         ][         ]
 
               currentCell = currentSheet.cell(
                   row=row, column=col, value=f"{heading}"
@@ -320,7 +326,7 @@ class Workout:
 
                   currentCell = currentSheet.cell(
                       row=row, column=col,
-                      value=f"=IFERROR(ROUND(AVERAGE({col_letter}{input_row}:{col_letter}{end_input_row}), 0), \"...\")"
+                      value=f"=IFERROR(ROUND(AVERAGE({col_letter}{begin_input_row}:{col_letter}{end_input_row}), 0), \"...\")"
                   )
 
                   self.set_style(
@@ -333,6 +339,50 @@ class Workout:
 
                   # Set next column
                   col += 1
+
+                  if col == NEXT_COLUMN + 1:
+                      break
+
+
+  def generate_sums_row(self, row: int, col: int, currentSheet: object, sets: int) -> object:
+
+              currentCell = currentSheet.cell(
+                  row=row, column=col, value=f"Sums"
+              )
+
+              self.set_style(
+                  currentSheet, currentCell, col,
+                  fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
+                  size=12, width=15, font='Helvetica', bold=True
+              )
+
+              col += 1
+
+              # Get first row of user inputs [ Load ] [ Reps ], etc.
+              begin_input_row = row - sets
+              # Get last input row [ Load ] [ Reps ], etc.
+              end_input_row = row - 1
+
+              for input_row in range(begin_input_row, begin_input_row + sets):
+
+                  col_letter = get_column_letter(col)
+
+                  currentCell = currentSheet.cell(
+                      row=row, column=col,
+                      value=f"=IFERROR(SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row}), \"...\")"
+                  )
+
+                  self.set_style(
+                      currentSheet, currentCell, col,
+                      fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
+                      size=12, width=8, font='Helvetica', bold=False
+                  )
+
+                  currentCell.alignment = ALIGNMENT
+
+                  # Set next column
+                  col += 1
+
                   if col == NEXT_COLUMN + 1:
                       break
 
