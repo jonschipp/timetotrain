@@ -17,7 +17,7 @@ Writing sheet Week 8
 Writing program to train.xlsx
 ```
 
-[Sheet Example](imgs/sheet.png)
+![Sheet Example](imgs/sheet.png)
 
 ## Install
 
