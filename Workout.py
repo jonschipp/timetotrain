@@ -12,6 +12,11 @@ NEXT_COLUMN = COLUMN_LENGTH + 2 # Where the next column begins for each day/slot
 COLOR_LIGHTBLACK='00282828'
 COLOR_DARKGREY='00505050'
 COLOR_DARKRED='00600000'
+VOLUME_HEADERS = [ "Sets", "Weight", "Reps", "RIR", "RPE",  "Avg Vel", "Int %" ]
+ALIGNMENT = Alignment(
+    wrap_text=True, horizontal="center", vertical="center"
+)
+
 
 class Workout:
 
@@ -94,12 +99,13 @@ class Workout:
 
           for day in range(1, frequency + 1):
 
-              slot_row = BEGIN_SLOT_ROW # We start in the 6th row
-              exercise_row = 8
-              programming_row = 9
-              notes_row = 10
-              volume_header_row = 11
-              volume_input_row = 12
+              slot_row = BEGIN_SLOT_ROW
+              exercise_row = BEGIN_SLOT_ROW + 2
+              programming_row = BEGIN_SLOT_ROW + 3
+              notes_row = BEGIN_SLOT_ROW + 4
+              volume_header_row = BEGIN_SLOT_ROW + 5
+              volume_input_row = BEGIN_SLOT_ROW + 6
+              averages_row = volume_input_row + sets
 
               for slot in range(1, slots + 1):
                   #print(f"Writing {sheet} row: {slot_row}, col: {slot_col}")
@@ -155,6 +161,11 @@ class Workout:
                   self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=sets)
                   volume_input_row += NEXT_SLOT_ROW
 
+                  # Add averages row
+                  # [ Avgs ] [ <formula> ], etc.
+                  self.generate_averages_row(averages_row, slot_col, currentSheet, sets=sets)
+                  averages_row += NEXT_SLOT_ROW
+
               # Start writing in column for next day
               slot_col += NEXT_COLUMN
       return slots
@@ -199,20 +210,13 @@ class Workout:
                   row=row, column=col+1
               )
 
-              alignment = Alignment(
-                  wrap_text=True, horizontal="center", vertical="center"
-              )
-
-              currentCell.alignment = alignment
+              currentCell.alignment = ALIGNMENT
 
               return currentCell
 
 
   def generate_volume_header(self, row: int, col: int, currentSheet: object) -> object:
-              # [ Sets ] [ Weight ] [ Reps ] [ RIR ] [ RPE ] [ Avg Vel ] [ Intensity ]
-              headers = [ "Sets", "Weight", "Reps", "RIR", "RPE",  "Avg Vel", "Int %" ]
-
-              for header in headers:
+              for header in VOLUME_HEADERS:
                   currentCell = currentSheet.cell(
                       row=row, column=col, value=f"{header}"
                   )
@@ -232,10 +236,6 @@ class Workout:
 
               number_of_inputs = 5
 
-              alignment = Alignment(
-                  wrap_text=True, horizontal="center", vertical="center"
-              )
-
               for number in range(1, sets + 1):
 
                   currentCell = currentSheet.cell(
@@ -254,12 +254,46 @@ class Workout:
                           row=row, column=col+item, value=""
                       )
 
-                      currentCell.alignment = alignment
+                      currentCell.alignment = ALIGNMENT
 
                   # Set next column
                   row += 1
 
               return currentCell
+
+
+  def generate_averages_row(self, row: int, col: int, currentSheet: object, sets: int) -> object:
+
+              AVERAGE_FORMULAS = [""]
+
+              currentCell = currentSheet.cell(
+                  row=row, column=col, value=f"Avgs"
+              )
+
+              self.set_style(
+                  currentSheet, currentCell, col,
+                  fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
+                  size=12, width=8, font='Helvetica', bold=True
+              )
+
+              col += 1
+
+              for i in AVERAGE_FORMULAS:
+
+                  currentCell = currentSheet.cell(
+                      row=row, column=col, value=f"{i}"
+                  )
+
+                  self.set_style(
+                      currentSheet, currentCell, col,
+                      fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
+                      size=12, width=8, font='Helvetica', bold=False
+                  )
+
+                  currentCell.alignment = ALIGNMENT
+
+                  # Set next column
+                  col += 1
 
 
   def set_style(self, sheet: object, cell: object, col: int, fgColor: str, bgColor: str, size: int, width: int, font: str, bold: bool = False) -> object:
@@ -270,14 +304,11 @@ class Workout:
         fill = PatternFill(
             fill_type='solid', fgColor=bgColor,
         )
-        alignment = Alignment(
-            wrap_text=True, horizontal="center", vertical="center"
-        )
 
         sheet.column_dimensions[get_column_letter(col)].width = width
         cell.font = font
         cell.fill = fill
-        cell.alignment = alignment
+        cell.alignment = ALIGNMENT
         return cell
 
 
