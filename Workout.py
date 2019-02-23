@@ -4,6 +4,7 @@ from openpyxl.styles import Alignment, Border, Color, Font, PatternFill, Protect
 from openpyxl.utils import get_column_letter, column_index_from_string
 from openpyxl.formula.translate import Translator
 
+
 # TODO: Calculate these numbers in dynamically
 COLUMN_LENGTH = 6 # The length of each day/slot, determines overall alignment
 BEGIN_COLUMN = 2 #  We start in the 2nd column i.e. B for each day/slot
@@ -319,7 +320,7 @@ class Workout:
 
                   currentCell = currentSheet.cell(
                       row=row, column=col,
-                      value=f"=IFERROR(AVERAGE({col_letter}{input_row}:{col_letter}{end_input_row}), \"...\")"
+                      value=f"=IFERROR(ROUND(AVERAGE({col_letter}{input_row}:{col_letter}{end_input_row}), 0), \"...\")"
                   )
 
                   self.set_style(
