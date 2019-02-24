@@ -9,18 +9,25 @@ from openpyxl.formula.translate import Translator
 COLUMN_LENGTH = 6 # The length of each day/slot, determines overall alignment
 BEGIN_COLUMN = 2 #  We start in the 2nd column i.e. B for each day/slot
 BEGIN_FREQ_ROW = 4 # We start at row 4 for each day/slot
-BEGIN_SLOT_ROW = 6
-NEXT_SLOT_ROW = 20
+BEGIN_SLOT_ROW = 6 # The row where the exercise slot begins e.g. [ Exercise 1 ]
+NEXT_SLOT_ROW = 22 # If we add more rows, we need to increase this by 1 for each added row
 NEXT_COLUMN = COLUMN_LENGTH + 2 # Where the next column begins for each day/slot
+# TODO: Make these user defineable
+VOLUME_HEADERS = {
+    "Sets":    { "ColumnNumber": BEGIN_COLUMN,     "ColumnLetter": get_column_letter(BEGIN_COLUMN)    },
+    "Load":    { "ColumnNumber": BEGIN_COLUMN + 1, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 1)},
+    "Reps":    { "ColumnNumber": BEGIN_COLUMN + 2, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 2)},
+    "RIR":     { "ColumnNumber": BEGIN_COLUMN + 3, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 3)},
+    "RPE":     { "ColumnNumber": BEGIN_COLUMN + 4, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 4)},
+    "Avg Vel": { "ColumnNumber": BEGIN_COLUMN + 5, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 5)},
+    "Int %":   { "ColumnNumber": BEGIN_COLUMN + 6, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 6)}
+}
+VOLUME_LENGTH = len(VOLUME_HEADERS)
+
 # TODO: Move this into a style module
 COLOR_LIGHTBLACK='00282828'
 COLOR_DARKGREY='00505050'
 COLOR_DARKRED='00600000'
-# TODO: Make these user defineable
-VOLUME_HEADERS = [ "Sets", "Load", "Reps", "RIR", "RPE",  "Avg Vel", "Int %" ]
-VOLUME_LENGTH = len(VOLUME_HEADERS)
-
-# TODO: Move this into a style module
 ALIGNMENT = Alignment(
     wrap_text=True, horizontal="center", vertical="center"
 )
@@ -116,6 +123,9 @@ class Workout:
               volume_input_row = BEGIN_SLOT_ROW + 6
               averages_row = volume_input_row + sets
               sums_row = volume_input_row + sets + 1
+              volume_row = volume_input_row + sets + 2
+              tonnage_row = volume_input_row + sets + 3
+              e1rm_row = volume_input_row + sets + 4
 
               for slot in range(1, slots + 1):
                   #print(f"Writing {sheet} row: {slot_row}, col: {slot_col}")
@@ -172,7 +182,6 @@ class Workout:
                   self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=sets)
                   # TODO: We should not be be referencing numbers, it's barely readable
                   self.generate_rir_to_rpe(volume_input_row, slot_col+4, currentSheet, sets=sets)
-                  volume_input_row += NEXT_SLOT_ROW
 
 
                   # Add averages row
@@ -183,7 +192,24 @@ class Workout:
                   # Add averages row
                   # [ Sums ] [ <formula> ], etc.
                   self.generate_sums_row(sums_row, slot_col, currentSheet, sets=sets)
+                  # Add row for Volume (sets x reps) that reads the Reps sum - for convenience. 
+                  # Depends on value of sums_row before we increment it
+                  self.set_formula(
+                      currentCell=self.generate_divide(volume_row, slot_col, currentSheet, heading='Volume', style='formula'),
+                      formula=f"={VOLUME_HEADERS['Reps']['ColumnLetter']}{sums_row}"
+                  )
+
+                  self.set_formula(
+                      currentCell=self.generate_divide(tonnage_row, slot_col, currentSheet, heading='Tonnage', style='formula'),
+                      formula=self.generate_tonnage_formula(volume_input_row, sets)
+                  )
+                  self.generate_divide(e1rm_row, slot_col, currentSheet, heading='E1RM', style='manual')
+
+                  volume_input_row += NEXT_SLOT_ROW
                   sums_row += NEXT_SLOT_ROW
+                  tonnage_row += NEXT_SLOT_ROW
+                  volume_row += NEXT_SLOT_ROW
+                  e1rm_row += NEXT_SLOT_ROW
 
               # Start writing in column for next day
               slot_col += NEXT_COLUMN
@@ -205,11 +231,17 @@ class Workout:
               return currentCell
 
 
-  def generate_divide(self, row: int, col: int, currentSheet: object, heading: str = 'Header') -> object:
+  def generate_divide(self, row: int, col: int, currentSheet: object, heading: str = 'Header', style: str = 'manual') -> object:
               # Create divide with header and input
               # [         ][         ]
               # [ Program ][ <input> ]
               # [         ][         ]
+              color = COLOR_DARKGREY
+              bold = False
+
+              if style == 'formula':
+                  color = COLOR_DARKRED
+                  bold = True
 
               currentCell = currentSheet.cell(
                   row=row, column=col, value=f"{heading}"
@@ -221,13 +253,20 @@ class Workout:
 
               self.set_style(
                   currentSheet, currentCell, col,
-                  fgColor=colors.WHITE, bgColor=COLOR_DARKGREY,
-                  size=12, width=20, font='Helvetica', bold=False
+                  fgColor=colors.WHITE, bgColor=color,
+                  size=12, width=20, font='Helvetica', bold=bold
               )
 
               currentCell = currentSheet.cell(
                   row=row, column=col+1
               )
+
+              if style == 'formula':
+                  self.set_style(
+                      currentSheet, currentCell, col,
+                      fgColor=colors.WHITE, bgColor=color,
+                      size=12, width=20, font='Helvetica', bold=False
+                  )
 
               currentCell.alignment = ALIGNMENT
 
@@ -279,6 +318,7 @@ class Workout:
                   row += 1
 
               return currentCell
+
 
   def generate_rir_to_rpe(self, row: int, col: int, currentSheet: object, sets: int) -> object:
               # [ RIR ] to [ RPE ]
@@ -389,6 +429,20 @@ class Workout:
 
                   if count == VOLUME_LENGTH:
                       break
+
+
+  def set_formula(self, currentCell: object, formula: str) -> None:
+        currentCell.value = formula
+        currentCell.alignment = ALIGNMENT
+
+  def generate_tonnage_formula(self, row, sets) -> None:
+      #=SUM(PRODUCT(C34:C34),PRODUCT(C35:C35),PRODUCT(C36:C36)...)
+      l = []
+      for r in range(row, row + sets):
+          l.append(f"{VOLUME_HEADERS['Load']['ColumnLetter']}{r}:{VOLUME_HEADERS['Reps']['ColumnLetter']}{r}")
+
+      formula = '{}{}{}'.format('=SUM(', ''.join('PRODUCT({}),'.format(i) for i in l).rstrip(','), ')')
+      return formula
 
 
   def set_style(self, sheet: object, cell: object, col: int, fgColor: str, bgColor: str, size: int, width: int, font: str, bold: bool = False) -> object:
