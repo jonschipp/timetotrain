@@ -412,7 +412,7 @@ class Workout:
 
                   currentCell = currentSheet.cell(
                       row=row, column=col,
-                      value=f"=IFERROR(SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row}), \"...\")"
+                      value=f"=IF(SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row})>0, SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row}), \"...\")"
                   )
 
                   self.set_style(
