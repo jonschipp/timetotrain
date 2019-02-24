@@ -213,6 +213,7 @@ class Workout:
 
               # Start writing in column for next day
               slot_col += NEXT_COLUMN
+
       return slots
 
 
@@ -456,10 +457,17 @@ class Workout:
   def generate_tonnage_formula(self, row, sets) -> None:
       #=SUM(PRODUCT(C34:C34),PRODUCT(C35:C35),PRODUCT(C36:C36)...)
       l = []
+
+      first_row = row
+      last_row = row + sets - 1
       for r in range(row, row + sets):
           l.append(f"{VOLUME_HEADERS['Load']['ColumnLetter']}{r}:{VOLUME_HEADERS['Reps']['ColumnLetter']}{r}")
 
-      formula = '{}{}{}'.format('=SUM(', ''.join('PRODUCT({}),'.format(i) for i in l).rstrip(','), ')')
+      formula = '{}, {}{}), {})'.format(
+          f"=IF(COUNT({VOLUME_HEADERS['Load']['ColumnLetter']}{first_row}:{VOLUME_HEADERS['Load']['ColumnLetter']}{last_row})>0",
+          f"SUM(", "".join('PRODUCT({}), '.format(i) for i in l).rstrip(','),
+          f"\"...\""
+      )
       return formula
 
 
