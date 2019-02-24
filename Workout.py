@@ -376,11 +376,13 @@ class Workout:
 
                   currentCell = currentSheet.cell(
                       row=row, column=col,
-                      value=f"=IFERROR(ROUND(AVERAGE({col_letter}{begin_input_row}:{col_letter}{end_input_row}), 0), \"...\")"
+                      value=f"=IFERROR(ROUND(AVERAGEIF({col_letter}{begin_input_row}:{col_letter}{end_input_row}, \"<>0\"), 0), \"...\")"
                   )
 
                   if col == VOLUME_HEADERS['Avg Vel']['ColumnNumber']:
-                      currentCell.value = f"=IFERROR(AVERAGE({col_letter}{begin_input_row}:{col_letter}{end_input_row}), \"...\")"
+                      currentCell.value = f"=IFERROR(AVERAGEIF({col_letter}{begin_input_row}:{col_letter}{end_input_row}, \"<>0\"), \"...\")"
+                  if col == VOLUME_HEADERS['Int %']['ColumnNumber']:
+                      currentCell.value = f"=IFERROR(ROUND(AVERAGEIF({col_letter}{begin_input_row}:{col_letter}{end_input_row}, \"<>0\"), 3), \"...\")"
 
                   self.set_style(
                       currentSheet, currentCell, col,
