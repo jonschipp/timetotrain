@@ -315,7 +315,7 @@ class Workout:
                       if col+item == VOLUME_HEADERS['Int %']['ColumnNumber']:
                           self.set_formula(
                               currentCell=currentCell,
-                              formula=f"=IF(ISBLANK({VOLUME_HEADERS['Load']['ColumnLetter']}{row}), \"...\", {VOLUME_HEADERS['Load']['ColumnLetter']}{row}/{VOLUME_HEADERS['Load']['ColumnLetter']}{kwargs['e1rm_row']})"
+                              formula=f"=IF(ISBLANK({VOLUME_HEADERS['Load']['ColumnLetter']}{kwargs['e1rm_row']}), \"...\", {VOLUME_HEADERS['Load']['ColumnLetter']}{row}/{VOLUME_HEADERS['Load']['ColumnLetter']}{kwargs['e1rm_row']})"
                           )
                           currentCell.number_format = '0%'
 
