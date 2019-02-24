@@ -179,7 +179,7 @@ class Workout:
                   # Add set inputs
                   # [ Set 1 ] [ <input> ]
                   # [ Set 2 ] [ <input> ]
-                  self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=sets)
+                  self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=sets, e1rm_row=e1rm_row)
                   # TODO: We should not be be referencing numbers, it's barely readable
                   self.generate_rir_to_rpe(volume_input_row, slot_col+4, currentSheet, sets=sets)
 
@@ -192,7 +192,7 @@ class Workout:
                   # Add averages row
                   # [ Sums ] [ <formula> ], etc.
                   self.generate_sums_row(sums_row, slot_col, currentSheet, sets=sets)
-                  # Add row for Volume (sets x reps) that reads the Reps sum - for convenience. 
+                  # Add row for Volume (sets x reps) that reads the Reps sum - for convenience.
                   # Depends on value of sums_row before we increment it
                   self.set_formula(
                       currentCell=self.generate_divide(volume_row, slot_col, currentSheet, heading='Volume', style='formula'),
@@ -290,9 +290,7 @@ class Workout:
               return currentCell
 
 
-  def generate_volume_input(self, row: int, col: int, currentSheet: object, sets: int) -> object:
-
-              number_of_inputs = 5
+  def generate_volume_input(self, row: int, col: int, currentSheet: object, sets: int, **kwargs: dict) -> object:
 
               for number in range(1, sets + 1):
 
@@ -306,11 +304,19 @@ class Workout:
                       size=12, width=8, font='Helvetica', bold=False
                   )
 
-                  for item in range(1, number_of_inputs + 1):
+                  for item in range(1, VOLUME_LENGTH):
 
                       currentCell = currentSheet.cell(
                           row=row, column=col+item, value=""
                       )
+
+                      # Add intensity calculation based off E1RM
+                      if col+item == VOLUME_HEADERS['Int %']['ColumnNumber']:
+                          self.set_formula(
+                              currentCell=currentCell,
+                              formula=f"=IF(ISBLANK({VOLUME_HEADERS['Load']['ColumnLetter']}{row}), \"...\", {VOLUME_HEADERS['Load']['ColumnLetter']}{row}/{VOLUME_HEADERS['Load']['ColumnLetter']}{kwargs['e1rm_row']})"
+                          )
+                          currentCell.number_format = '0%'
 
                       currentCell.alignment = ALIGNMENT
 
@@ -362,6 +368,7 @@ class Workout:
               end_input_row = row - 1
 
               count = 1
+
               for input_row in range(begin_input_row, begin_input_row + sets):
 
                   col_letter = get_column_letter(col)
@@ -371,6 +378,9 @@ class Workout:
                       value=f"=IFERROR(ROUND(AVERAGE({col_letter}{begin_input_row}:{col_letter}{end_input_row}), 0), \"...\")"
                   )
 
+                  if col == VOLUME_HEADERS['Avg Vel']['ColumnNumber']:
+                      currentCell.value = f"=IFERROR(AVERAGE({col_letter}{begin_input_row}:{col_letter}{end_input_row}), \"...\")"
+
                   self.set_style(
                       currentSheet, currentCell, col,
                       fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
@@ -378,6 +388,9 @@ class Workout:
                   )
 
                   currentCell.alignment = ALIGNMENT
+
+                  if col == VOLUME_HEADERS['Int %']['ColumnNumber']:
+                      currentCell.number_format = '0%'
 
                   # Set next column
                   col += 1
@@ -406,6 +419,7 @@ class Workout:
               # Get last input row [ Load ] [ Reps ], etc.
               end_input_row = row - 2
               count = 1
+
               for input_row in range(begin_input_row, begin_input_row + sets):
 
                   col_letter = get_column_letter(col)
@@ -423,6 +437,9 @@ class Workout:
 
                   currentCell.alignment = ALIGNMENT
 
+                  if col == VOLUME_HEADERS['Int %']['ColumnNumber']:
+                      currentCell.number_format = '0%'
+
                   # Set next column
                   col += 1
                   count += 1
@@ -434,6 +451,7 @@ class Workout:
   def set_formula(self, currentCell: object, formula: str) -> None:
         currentCell.value = formula
         currentCell.alignment = ALIGNMENT
+
 
   def generate_tonnage_formula(self, row, sets) -> None:
       #=SUM(PRODUCT(C34:C34),PRODUCT(C35:C35),PRODUCT(C36:C36)...)
