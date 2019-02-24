@@ -18,6 +18,7 @@ COLOR_DARKGREY='00505050'
 COLOR_DARKRED='00600000'
 # TODO: Make these user defineable
 VOLUME_HEADERS = [ "Sets", "Load", "Reps", "RIR", "RPE",  "Avg Vel", "Int %" ]
+VOLUME_LENGTH = len(VOLUME_HEADERS)
 
 # TODO: Move this into a style module
 ALIGNMENT = Alignment(
@@ -315,13 +316,12 @@ class Workout:
 
               col += 1
 
-
               # Get first row of user inputs [ Load ] [ Reps ], etc.
               begin_input_row = row - sets
               # Get last input row [ Load ] [ Reps ], etc.
               end_input_row = row - 1
 
-              count = 0
+              count = 1
               for input_row in range(begin_input_row, begin_input_row + sets):
 
                   col_letter = get_column_letter(col)
@@ -343,9 +343,8 @@ class Workout:
                   col += 1
                   count += 1
 
-                  if count == COLUMN_LENGTH:
+                  if count == VOLUME_LENGTH:
                       break
-
 
 
   def generate_sums_row(self, row: int, col: int, currentSheet: object, sets: int) -> object:
@@ -366,7 +365,7 @@ class Workout:
               begin_input_row = row - sets - 1
               # Get last input row [ Load ] [ Reps ], etc.
               end_input_row = row - 2
-              count = 0
+              count = 1
               for input_row in range(begin_input_row, begin_input_row + sets):
 
                   col_letter = get_column_letter(col)
@@ -388,7 +387,7 @@ class Workout:
                   col += 1
                   count += 1
 
-                  if count == COLUMN_LENGTH:
+                  if count == VOLUME_LENGTH:
                       break
 
 
