@@ -115,6 +115,8 @@ class Workout:
 
           slot_col = BEGIN_COLUMN
 
+          session_rpe_row = None
+
           for day in range(1, frequency + 1):
 
               # TODO: Determining placement can be done better than this
@@ -212,6 +214,14 @@ class Workout:
                   tonnage_row += NEXT_SLOT_ROW
                   volume_row += NEXT_SLOT_ROW
                   e1rm_row += NEXT_SLOT_ROW
+
+              avg_row = averages_row - NEXT_SLOT_ROW
+              if not session_rpe_row:
+                  session_rpe_row = currentSheet.max_row + 1
+              self.set_formula(
+                  currentCell=self.generate_divide(session_rpe_row, slot_col, currentSheet, heading='Session RPE', style='formula'),
+                  formula=f"=IFERROR(AVERAGEIF({VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}:{VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}, \"<>0\"), \"...\")"
+              )
 
               # Start writing in column for next day
               slot_col += NEXT_COLUMN
