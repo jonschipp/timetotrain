@@ -119,11 +119,11 @@ class Workout:
 
               # TODO: Determining placement can be done better than this
               slot_row = BEGIN_SLOT_ROW
-              exercise_row = BEGIN_SLOT_ROW + 2
-              programming_row = BEGIN_SLOT_ROW + 3
-              notes_row = BEGIN_SLOT_ROW + 4
-              volume_header_row = BEGIN_SLOT_ROW + 5
-              volume_input_row = BEGIN_SLOT_ROW + 6
+              exercise_row = BEGIN_SLOT_ROW + 1
+              programming_row = BEGIN_SLOT_ROW + 2
+              notes_row = BEGIN_SLOT_ROW + 3
+              volume_header_row = BEGIN_SLOT_ROW + 4
+              volume_input_row = BEGIN_SLOT_ROW + 5
               averages_row = volume_input_row + sets
               sums_row = volume_input_row + sets + 1
               volume_row = volume_input_row + sets + 2
@@ -131,7 +131,6 @@ class Workout:
               e1rm_row = volume_input_row + sets + 4
 
               for slot in range(1, slots + 1):
-                  #print(f"Writing {sheet} row: {slot_row}, col: {slot_col}")
 
                   # Add exercise slot header
                   # [    Day 1   ]
