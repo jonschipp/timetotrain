@@ -123,9 +123,10 @@ class Workout:
               slot_row = BEGIN_SLOT_ROW
               exercise_row = BEGIN_SLOT_ROW + 1
               programming_row = BEGIN_SLOT_ROW + 2
-              notes_row = BEGIN_SLOT_ROW + 3
-              volume_header_row = BEGIN_SLOT_ROW + 4
-              volume_input_row = BEGIN_SLOT_ROW + 5
+              target_row = BEGIN_SLOT_ROW + 3
+              notes_row = BEGIN_SLOT_ROW + 4
+              volume_header_row = BEGIN_SLOT_ROW + 5
+              volume_input_row = BEGIN_SLOT_ROW + 6
               averages_row = volume_input_row + sets
               sums_row = volume_input_row + sets + 1
               volume_row = volume_input_row + sets + 2
@@ -167,12 +168,16 @@ class Workout:
 
                   # [       Program      ]
                   # [        Notes       ]
+                  # [        Target       ]
                   self.generate_divide(programming_row, slot_col, currentSheet, heading='Program')
+                  self.generate_divide(target_row, slot_col, currentSheet, heading='Target')
                   self.generate_divide(notes_row, slot_col, currentSheet, heading='Notes')
                   # TODO: Row height can be set in a better place
                   currentSheet.row_dimensions[programming_row].height = 40
+                  currentSheet.row_dimensions[target_row].height = 40
                   currentSheet.row_dimensions[notes_row].height = 40
                   programming_row += NEXT_SLOT_ROW
+                  target_row += NEXT_SLOT_ROW
                   notes_row += NEXT_SLOT_ROW
 
                   # Add set header inputs
