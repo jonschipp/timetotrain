@@ -536,6 +536,48 @@ class Workout:
       return formula
 
 
+  def clear_row(self, row: int, currentSheet: object) -> object:
+        # Try white background
+        min_col = currentSheet.min_column
+        max_col = currentSheet.max_column
+
+        currentSheet.merge_cells(
+            start_row=row, end_row=row,
+            start_column=min_col, end_column=max_col
+        )
+        currentCell = currentSheet.cell(
+            row=max_col, column=min_col
+        )
+        self.set_style(
+            currentSheet, currentCell, col,
+            fgColor=colors.WHITE, bgColor=colors.WHITE,
+            size=12, width=20, font='Helvetica', bold=False
+        )
+
+        return currentCell
+
+
+  def clear_col(self, col: int, currentSheet: object) -> object:
+        # Try white background
+        min_row = currentSheet.min_row
+        max_row = currentSheet.max_row
+
+        currentSheet.merge_cells(
+            start_row=min_row, end_row=max_row,
+            start_column=col, end_column=col
+        )
+        currentCell = currentSheet.cell(
+            row=min_row, column=col
+        )
+        self.set_style(
+            currentSheet, currentCell, col,
+            fgColor=colors.WHITE, bgColor=colors.WHITE,
+            size=12, width=20, font='Helvetica', bold=False
+        )
+
+        return currentCell
+
+
   def set_style(self, sheet: object, cell: object, col: int, fgColor: str, bgColor: str, size: int, width: int, font: str, bold: bool = False) -> object:
         # Set style
         font = Font(
