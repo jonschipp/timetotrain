@@ -40,7 +40,7 @@ def main():
   weeks, frequency, slots, sets, filename = arguments()
 
   w = Workout()
-  w.generate_weeks(weeks=weeks)
+  w.generate_weeks(weeks=weeks, frequency=frequency)
   w.generate_frequency(frequency=frequency)
   w.generate_slots(slots=slots, sets=sets, frequency=frequency)
   w.save(filename=filename)
