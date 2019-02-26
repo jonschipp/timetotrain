@@ -416,7 +416,8 @@ class Workout:
 
                   currentCell = currentSheet.cell(
                       row=row, column=col,
-                      value=f"=IF({col_rpe_letter}{input_row}=\"\", \"...\", ABS(IFERROR({col_rpe_letter}{input_row}−10, \"\")))"
+                      value=f"=IF(ISBLANK({col_rpe_letter}{input_row}), \"...\", IFERROR(ABS(SUM({col_rpe_letter}{input_row}, −10)), \"N/A\"))"
+                      #e.g. =IF(ISBLANK(L15), "...", IFERROR(ABS(SUM(L15, -10)), "..."))
                   )
 
                   currentCell.alignment = ALIGNMENT
@@ -506,7 +507,7 @@ class Workout:
 
                   currentCell = currentSheet.cell(
                       row=row, column=col,
-                      value=f"=IF(SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row})>0, SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row}), \"...\")"
+                      value=f"=IFERROR(IF(SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row})>0, SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row}), \"...\"), \"N/A\")"
                   )
 
                   self.set_style(
