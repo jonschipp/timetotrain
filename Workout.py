@@ -117,6 +117,7 @@ class Workout:
 
           slot_col = BEGIN_COLUMN
 
+          daily_rpe_row = None
           session_rpe_row = None
 
           for day in range(1, frequency + 1):
@@ -224,11 +225,17 @@ class Workout:
                   e1rm_row += NEXT_SLOT_ROW
 
               avg_row = averages_row - NEXT_SLOT_ROW
+              if not daily_rpe_row:
+                  daily_rpe_row = currentSheet.max_row + 1
               if not session_rpe_row:
-                  session_rpe_row = currentSheet.max_row + 1
+                  session_rpe_row = currentSheet.max_row + 2
               self.set_formula(
-                  currentCell=self.generate_divide(session_rpe_row, slot_col, currentSheet, heading='Session RPE', style='formula'),
+                  currentCell=self.generate_divide(daily_rpe_row, slot_col, currentSheet, heading='Average RPE', style='formula'),
                   formula=f"=IFERROR(AVERAGEIF({VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}:{VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}, \"<>0\"), \"...\")"
+              )
+              self.set_formula(
+                  currentCell=self.generate_divide(session_rpe_row, slot_col, currentSheet, heading='Session RPE', style='manual'),
+                  formula=f""
               )
 
               # Update starting columns and start writing in column for next day
