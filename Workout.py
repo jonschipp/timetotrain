@@ -7,13 +7,14 @@ import datetime
 
 
 # TODO: Calculate these numbers in dynamically
-COLUMN_LENGTH = 6 # The length of each day/slot, determines overall alignment
+COLUMN_LENGTH = 7 # The length of each day/slot, determines overall alignment
 BEGIN_COLUMN = 2 #  We start in the 2nd column i.e. B for each day/slot
 BEGIN_FREQ_ROW = 4 # We start at row 4 for each day/slot
 BEGIN_SLOT_ROW = 6 # The row where the exercise slot begins e.g. [ Exercise 1 ]
 NEXT_SLOT_ROW = 22 # If we add more rows, we need to increase this by 1 for each added row
 NEXT_COLUMN = COLUMN_LENGTH + 2 # Where the next column begins for each day/slot
 # TODO: Make these user defineable
+# These are updated for each day via update_volume_headers() and reset back to this after each week via reset_volume_headers()
 VOLUME_HEADERS = {
     "Sets":    { "ColumnNumber": BEGIN_COLUMN,     "ColumnLetter": get_column_letter(BEGIN_COLUMN)    },
     "Load":    { "ColumnNumber": BEGIN_COLUMN + 1, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 1)},
@@ -21,7 +22,8 @@ VOLUME_HEADERS = {
     "RIR":     { "ColumnNumber": BEGIN_COLUMN + 3, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 3)},
     "RPE":     { "ColumnNumber": BEGIN_COLUMN + 4, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 4)},
     "Avg Vel": { "ColumnNumber": BEGIN_COLUMN + 5, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 5)},
-    "Int %":   { "ColumnNumber": BEGIN_COLUMN + 6, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 6)}
+    "Int %":   { "ColumnNumber": BEGIN_COLUMN + 6, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 6)},
+    "LWL":     { "ColumnNumber": BEGIN_COLUMN + 7, "ColumnLetter": get_column_letter(BEGIN_COLUMN + 7)}
 }
 VOLUME_LENGTH = len(VOLUME_HEADERS)
 
@@ -37,11 +39,11 @@ ALIGNMENT = Alignment(
 class Workout:
 
   def __init__(self, weeks=8, frequency=3, slots=3, sets=10):
-    self.wb = Workbook()
-    self.weeks = weeks     # How many weeks for the progrqm
-    self.frequency = frequency # How many days per week
-    self.slots = slots     # How many slots per day
-    self.sets = sets     # How many sets per slot
+      self.wb = Workbook()
+      self.weeks = weeks     # How many weeks for the progrqm
+      self.frequency = frequency # How many days per week
+      self.slots = slots     # How many slots per day
+      self.sets = sets     # How many sets per slot
 
 
   def generate_weeks(self, weeks: int) -> list:
@@ -189,6 +191,7 @@ class Workout:
                   # [ Set 1 ] [ <input> ]
                   # [ Set 2 ] [ <input> ]
                   self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=sets, e1rm_row=e1rm_row)
+
                   # TODO: We should not be be referencing numbers, it's barely readable
                   self.generate_rir_to_rpe(volume_input_row, slot_col+4, currentSheet, sets=sets)
 
@@ -228,8 +231,12 @@ class Workout:
                   formula=f"=IFERROR(AVERAGEIF({VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}:{VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}, \"<>0\"), \"...\")"
               )
 
-              # Start writing in column for next day
+              # Update starting columns and start writing in column for next day
+              self.update_volume_headers()
               slot_col += NEXT_COLUMN
+
+          # Reset volume header back to default position for next week
+          self.reset_volume_headers()
 
       return slots
 
@@ -395,6 +402,25 @@ class Workout:
                               formula=f"=IF(ISBLANK({VOLUME_HEADERS['Load']['ColumnLetter']}{kwargs['e1rm_row']}), \"...\", {VOLUME_HEADERS['Load']['ColumnLetter']}{row}/{VOLUME_HEADERS['Load']['ColumnLetter']}{kwargs['e1rm_row']})"
                           )
                           currentCell.number_format = '0%'
+
+                      # Add Last Week's Load value
+                      if col+item == VOLUME_HEADERS['LWL']['ColumnNumber']:
+                          try:
+                              self.wb.active = currentSheet
+                              # Get last sheet to reference last load
+                              last_week = int(self.wb.active.title.split(' ')[1])-1
+                              formula=f"=IF(ISBLANK('Week {last_week}'!{VOLUME_HEADERS['Load']['ColumnLetter']}{row}), \"...\", 'Week {last_week}'!{VOLUME_HEADERS['Load']['ColumnLetter']}{row})"
+                              # E.g. =IF(ISBLANK('Week 1'!C12), "...", 'Week 1'!C12)
+                          except IndexError:
+                              formula = "N/A"
+
+                          #print(f"{currentCell.coordinate}: {formula}: {last_week} > 1")
+                          # The first week which is 0 doesn't have a previous week..skip
+                          if last_week > 0:
+                              self.set_formula(
+                                  currentCell=currentCell,
+                                  formula=formula
+                              )
 
                       currentCell.alignment = ALIGNMENT
 
@@ -607,6 +633,19 @@ class Workout:
         cell.fill = fill
         cell.alignment = ALIGNMENT
         return cell
+
+
+  def update_volume_headers(self) -> None:
+      for k in VOLUME_HEADERS.keys():
+          VOLUME_HEADERS[k]['ColumnNumber'] += 9
+          VOLUME_HEADERS[k]['ColumnLetter'] = get_column_letter(VOLUME_HEADERS[k]['ColumnNumber'])
+      return None
+
+
+  def reset_volume_headers(self) -> None:
+      for k, n in  zip(VOLUME_HEADERS.keys(), range(0, VOLUME_LENGTH)):
+          VOLUME_HEADERS[k]['ColumnNumber'] = BEGIN_COLUMN + n
+          VOLUME_HEADERS[k]['ColumnLetter'] = get_column_letter(BEGIN_COLUMN + n)
 
 
   def clear(self) -> None:
