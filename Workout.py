@@ -10,8 +10,7 @@ import datetime
 COLUMN_LENGTH = 7 # The length of each day/slot, determines overall alignment
 BEGIN_COLUMN = 2 #  We start in the 2nd column i.e. B for each day/slot
 BEGIN_FREQ_ROW = 4 # We start at row 4 for each day/slot
-BEGIN_SLOT_ROW = 6 # The row where the exercise slot begins e.g. [ Exercise 1 ]
-NEXT_SLOT_ROW = 22 # If we add more rows, we need to increase this by 1 for each added row
+BEGIN_SLOT_ROW = 6 # The first row in a week where the exercise slot begins e.g. [ Exercise 1 ]
 NEXT_COLUMN = COLUMN_LENGTH + 2 # Where the next column begins for each day/slot
 # TODO: Make these user defineable
 # These are updated for each day via update_volume_headers() and reset back to this after each week via reset_volume_headers()
@@ -115,26 +114,32 @@ class Workout:
           # Generate tables for days in sheet
           currentSheet = self.wb[sheet]
 
+          # Get beginning column, we adjust as needed in the slot loop
           slot_col = BEGIN_COLUMN
 
+          # These are used to track if for last rows in day
           daily_rpe_row = None
           session_rpe_row = None
 
           for day in range(1, frequency + 1):
 
               # TODO: Determining placement can be done better than this
-              slot_row = BEGIN_SLOT_ROW
-              exercise_row = BEGIN_SLOT_ROW + 1
-              programming_row = BEGIN_SLOT_ROW + 2
-              target_row = BEGIN_SLOT_ROW + 3
-              notes_row = BEGIN_SLOT_ROW + 4
-              volume_header_row = BEGIN_SLOT_ROW + 5
-              volume_input_row = BEGIN_SLOT_ROW + 6
-              averages_row = volume_input_row + sets
-              sums_row = volume_input_row + sets + 1
-              volume_row = volume_input_row + sets + 2
-              tonnage_row = volume_input_row + sets + 3
-              e1rm_row = volume_input_row + sets + 4
+              slot_rows = {
+                  "slot"          : BEGIN_SLOT_ROW,
+                  "exercise"      : BEGIN_SLOT_ROW + 1,
+                  "programming"   : BEGIN_SLOT_ROW + 2,
+                  "target"        : BEGIN_SLOT_ROW + 3,
+                  "notes"         : BEGIN_SLOT_ROW + 4,
+                  "volume_header" : BEGIN_SLOT_ROW + 5,
+                  "volume_input"  : BEGIN_SLOT_ROW + 6,
+                  "averages"      : BEGIN_SLOT_ROW + 6 + sets,
+                  "sums"          : BEGIN_SLOT_ROW + 6 + sets + 1,
+                  "volume"        : BEGIN_SLOT_ROW + 6 + sets + 2,
+                  "tonnage"       : BEGIN_SLOT_ROW + 6 + sets + 3,
+                  "e1rm"          : BEGIN_SLOT_ROW + 6 + sets + 4
+              }
+              # Used to get the next exercise slot section via its row number
+              next_slot=len(slot_rows)+sets
 
               for slot in range(1, slots + 1):
 
@@ -144,14 +149,14 @@ class Workout:
                   # [ Exercise 2 ]
                   # [ Exercise 3 ]
                   currentCell = self.generate_header(
-                      slot_row, slot_col, currentSheet, heading='Exercise', value=slot
+                      slot_rows['slot'], slot_col, currentSheet, heading='Exercise', value=slot
                   )
                   self.set_style(
                       currentSheet, currentCell, slot_col,
                       fgColor=colors.WHITE, bgColor=COLOR_DARKGREY,
                       size=32, width=20, font='Helvetica'
                   )
-                  slot_row += NEXT_SLOT_ROW
+                  slot_rows['slot'] += next_slot
 
                   # Add exercise header
                   # [    Day 1   ]
@@ -160,71 +165,71 @@ class Workout:
                   # [ Exercise 2 ]
                   # [  Exercise  ]
                   currentCell = self.generate_header(
-                      exercise_row, slot_col, currentSheet, heading='Exercise', value=''
+                      slot_rows['exercise'], slot_col, currentSheet, heading='Exercise', value=''
                   )
                   self.set_style(
                       currentSheet, currentCell, slot_col,
                       fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
                       size=18, width=20, font='Helvetica', bold=False
                   )
-                  exercise_row += NEXT_SLOT_ROW
+                  slot_rows['exercise'] += next_slot
 
                   # [       Program      ]
                   # [        Notes       ]
                   # [        Target       ]
-                  self.generate_divide(programming_row, slot_col, currentSheet, heading='Program')
-                  self.generate_divide(target_row, slot_col, currentSheet, heading='Target')
-                  self.generate_divide(notes_row, slot_col, currentSheet, heading='Notes')
+                  self.generate_divide(slot_rows['programming'], slot_col, currentSheet, heading='Program')
+                  self.generate_divide(slot_rows['target'], slot_col, currentSheet, heading='Target')
+                  self.generate_divide(slot_rows['notes'], slot_col, currentSheet, heading='Notes')
                   # TODO: Row height can be set in a better place
-                  currentSheet.row_dimensions[programming_row].height = 40
-                  currentSheet.row_dimensions[target_row].height = 40
-                  currentSheet.row_dimensions[notes_row].height = 40
-                  programming_row += NEXT_SLOT_ROW
-                  target_row += NEXT_SLOT_ROW
-                  notes_row += NEXT_SLOT_ROW
+                  currentSheet.row_dimensions[slot_rows['programming']].height = 40
+                  currentSheet.row_dimensions[slot_rows['target']].height = 40
+                  currentSheet.row_dimensions[slot_rows['notes']].height = 40
+                  slot_rows['programming'] += next_slot
+                  slot_rows['target'] += next_slot
+                  slot_rows['notes'] += next_slot
 
                   # Add set header inputs
                   # [ Sets ] [ Load ] [ Reps ] [ RIR ] [ RPE ] [ Avg Vel ] [ Intensity ]
-                  self.generate_volume_header(volume_header_row, slot_col, currentSheet)
-                  volume_header_row += NEXT_SLOT_ROW
+                  self.generate_volume_header(slot_rows['volume_header'], slot_col, currentSheet)
+                  slot_rows['volume_header'] += next_slot
 
                   # Add set inputs
                   # [ Set 1 ] [ <input> ]
                   # [ Set 2 ] [ <input> ]
-                  self.generate_volume_input(volume_input_row, slot_col, currentSheet, sets=sets, e1rm_row=e1rm_row)
+                  self.generate_volume_input(slot_rows['volume_input'], slot_col, currentSheet, sets=sets, e1rm_row=slot_rows['e1rm'])
 
                   # TODO: We should not be be referencing numbers, it's barely readable
-                  self.generate_rir_to_rpe(volume_input_row, slot_col+4, currentSheet, sets=sets)
+                  self.generate_rir_to_rpe(slot_rows['volume_input'], slot_col+4, currentSheet, sets=sets)
 
 
                   # Add averages row
                   # [ Avgs ] [ <formula> ], etc.
-                  self.generate_averages_row(averages_row, slot_col, currentSheet, sets=sets)
-                  averages_row += NEXT_SLOT_ROW
+                  self.generate_averages_row(slot_rows['averages'], slot_col, currentSheet, sets=sets)
+                  slot_rows['averages'] += next_slot
 
                   # Add averages row
                   # [ Sums ] [ <formula> ], etc.
-                  self.generate_sums_row(sums_row, slot_col, currentSheet, sets=sets)
+                  self.generate_sums_row(slot_rows['sums'], slot_col, currentSheet, sets=sets)
                   # Add row for Volume (sets x reps) that reads the Reps sum - for convenience.
-                  # Depends on value of sums_row before we increment it
+                  # Depends on value of slot_rows['sums'] before we increment it
                   self.set_formula(
-                      currentCell=self.generate_divide(volume_row, slot_col, currentSheet, heading='Volume', style='formula'),
-                      formula=f"={VOLUME_HEADERS['Reps']['ColumnLetter']}{sums_row}"
+                      currentCell=self.generate_divide(slot_rows['volume'], slot_col, currentSheet, heading='Volume', style='formula'),
+                      formula=f"={VOLUME_HEADERS['Reps']['ColumnLetter']}{slot_rows['sums']}"
                   )
 
                   self.set_formula(
-                      currentCell=self.generate_divide(tonnage_row, slot_col, currentSheet, heading='Tonnage', style='formula'),
-                      formula=self.generate_tonnage_formula(volume_input_row, sets)
+                      currentCell=self.generate_divide(slot_rows['tonnage'], slot_col, currentSheet, heading='Tonnage', style='formula'),
+                      formula=self.generate_tonnage_formula(slot_rows['volume_input'], sets)
                   )
-                  self.generate_divide(e1rm_row, slot_col, currentSheet, heading='E1RM', style='manual')
+                  self.generate_divide(slot_rows['e1rm'], slot_col, currentSheet, heading='E1RM', style='manual')
 
-                  volume_input_row += NEXT_SLOT_ROW
-                  sums_row += NEXT_SLOT_ROW
-                  tonnage_row += NEXT_SLOT_ROW
-                  volume_row += NEXT_SLOT_ROW
-                  e1rm_row += NEXT_SLOT_ROW
+                  slot_rows['volume_input'] += next_slot
+                  slot_rows['sums'] += next_slot
+                  slot_rows['tonnage'] += next_slot
+                  slot_rows['volume'] += next_slot
+                  slot_rows['e1rm'] += next_slot
 
-              avg_row = averages_row - NEXT_SLOT_ROW
+              avg_row = slot_rows['averages'] - next_slot
               if not daily_rpe_row:
                   daily_rpe_row = currentSheet.max_row + 1
               if not session_rpe_row:
@@ -421,7 +426,6 @@ class Workout:
                           except IndexError:
                               formula = "N/A"
 
-                          #print(f"{currentCell.coordinate}: {formula}: {last_week} > 1")
                           # The first week which is 0 doesn't have a previous week..skip
                           if last_week > 0:
                               self.set_formula(
