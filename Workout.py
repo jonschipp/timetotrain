@@ -207,6 +207,7 @@ class Workout:
                   # [ Maxes ] [ <formula> ], etc.
                   # Add row for getting the Max (highest number) - for convenience.
                   self.generate_maxes_row(slot_rows['maxes'], slot_col, currentSheet, sets=sets)
+                  slot_rows['maxes'] += next_slot
 
                   # Add averages row
                   # [ Avgs ] [ <formula> ], etc.
@@ -222,19 +223,19 @@ class Workout:
                       currentCell=self.generate_divide(slot_rows['volume'], slot_col, currentSheet, heading='Volume', style='formula'),
                       formula=f"={VOLUME_HEADERS['Reps']['ColumnLetter']}{slot_rows['sums']}"
                   )
+                  slot_rows['sums'] += next_slot
 
                   self.set_formula(
                       currentCell=self.generate_divide(slot_rows['tonnage'], slot_col, currentSheet, heading='Tonnage', style='formula'),
                       formula=self.generate_tonnage_formula(slot_rows['volume_input'], sets)
                   )
+                  slot_rows['tonnage'] += next_slot
+
                   self.generate_divide(slot_rows['e1rm'], slot_col, currentSheet, heading='E1RM', style='manual')
+                  slot_rows['e1rm'] += next_slot
 
                   slot_rows['volume_input'] += next_slot
-                  slot_rows['maxes'] += next_slot
-                  slot_rows['sums'] += next_slot
-                  slot_rows['tonnage'] += next_slot
                   slot_rows['volume'] += next_slot
-                  slot_rows['e1rm'] += next_slot
 
               avg_row = slot_rows['averages'] - next_slot
               if not daily_rpe_row:
@@ -485,16 +486,16 @@ class Workout:
 
               col += 1
 
+              # TODO: The hardcoding of position makes it unreadable
               # Get first row of user inputs [ Load ] [ Reps ], etc.
-              begin_input_row = row - sets
+              begin_input_row = row - sets - 1
               # Get last input row [ Load ] [ Reps ], etc.
-              end_input_row = row - 1
+              end_input_row = row - 2
 
-              count = 1
-
-              for input_row in range(begin_input_row, begin_input_row + sets):
+              for input_row in range(begin_input_row, begin_input_row + COLUMN_LENGTH):
 
                   col_letter = get_column_letter(col)
+                  #print(f"{begin_input_row} + {sets}: {col_letter}")
 
                   currentCell = currentSheet.cell(
                       row=row, column=col,
@@ -519,11 +520,6 @@ class Workout:
 
                   # Set next column
                   col += 1
-                  count += 1
-
-                  if count == VOLUME_LENGTH:
-                      break
-
 
   def generate_sums_row(self, row: int, col: int, currentSheet: object, sets: int) -> object:
 
@@ -540,12 +536,12 @@ class Workout:
               col += 1
 
               # Get first row of user inputs [ Load ] [ Reps ], etc.
-              begin_input_row = row - sets - 1
+              # TODO: The hardcoding of position makes it unreadable
+              begin_input_row = row - sets - 2
               # Get last input row [ Load ] [ Reps ], etc.
-              end_input_row = row - 2
-              count = 1
+              end_input_row = row - 3
 
-              for input_row in range(begin_input_row, begin_input_row + sets):
+              for input_row in range(begin_input_row, begin_input_row + COLUMN_LENGTH):
 
                   col_letter = get_column_letter(col)
 
@@ -567,10 +563,6 @@ class Workout:
 
                   # Set next column
                   col += 1
-                  count += 1
-
-                  if count == VOLUME_LENGTH:
-                      break
 
 
   def generate_maxes_row(self, row: int, col: int, currentSheet: object, sets: int) -> object:
@@ -588,12 +580,11 @@ class Workout:
               col += 1
 
               # Get first row of user inputs [ Load ] [ Reps ], etc.
-              begin_input_row = row - sets - 1
+              begin_input_row = row - sets
               # Get last input row [ Load ] [ Reps ], etc.
-              end_input_row = row - 2
-              count = 1
+              end_input_row = row - 1
 
-              for input_row in range(begin_input_row, begin_input_row + sets):
+              for input_row in range(begin_input_row, begin_input_row + COLUMN_LENGTH):
 
                   col_letter = get_column_letter(col)
 
@@ -616,10 +607,6 @@ class Workout:
 
                   # Set next column
                   col += 1
-                  count += 1
-
-                  if count == VOLUME_LENGTH:
-                      break
 
 
   def set_formula(self, currentCell: object, formula: str) -> None:
