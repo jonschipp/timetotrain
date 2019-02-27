@@ -132,11 +132,12 @@ class Workout:
                   "notes"         : BEGIN_SLOT_ROW + 4,
                   "volume_header" : BEGIN_SLOT_ROW + 5,
                   "volume_input"  : BEGIN_SLOT_ROW + 6,
-                  "averages"      : BEGIN_SLOT_ROW + 6 + sets,
-                  "sums"          : BEGIN_SLOT_ROW + 6 + sets + 1,
-                  "volume"        : BEGIN_SLOT_ROW + 6 + sets + 2,
-                  "tonnage"       : BEGIN_SLOT_ROW + 6 + sets + 3,
-                  "e1rm"          : BEGIN_SLOT_ROW + 6 + sets + 4
+                  "maxes"         : BEGIN_SLOT_ROW + 6 + sets,
+                  "averages"      : BEGIN_SLOT_ROW + 6 + sets + 1,
+                  "sums"          : BEGIN_SLOT_ROW + 6 + sets + 2,
+                  "volume"        : BEGIN_SLOT_ROW + 6 + sets + 3,
+                  "tonnage"       : BEGIN_SLOT_ROW + 6 + sets + 4,
+                  "e1rm"          : BEGIN_SLOT_ROW + 6 + sets + 5
               }
               # Used to get the next exercise slot section via its row number
               next_slot=len(slot_rows)+sets
@@ -202,6 +203,11 @@ class Workout:
                   self.generate_rir_to_rpe(slot_rows['volume_input'], slot_col+4, currentSheet, sets=sets)
 
 
+                  # Add maxes row
+                  # [ Maxes ] [ <formula> ], etc.
+                  # Add row for getting the Max (highest number) - for convenience.
+                  self.generate_maxes_row(slot_rows['maxes'], slot_col, currentSheet, sets=sets)
+
                   # Add averages row
                   # [ Avgs ] [ <formula> ], etc.
                   self.generate_averages_row(slot_rows['averages'], slot_col, currentSheet, sets=sets)
@@ -224,6 +230,7 @@ class Workout:
                   self.generate_divide(slot_rows['e1rm'], slot_col, currentSheet, heading='E1RM', style='manual')
 
                   slot_rows['volume_input'] += next_slot
+                  slot_rows['maxes'] += next_slot
                   slot_rows['sums'] += next_slot
                   slot_rows['tonnage'] += next_slot
                   slot_rows['volume'] += next_slot
@@ -545,6 +552,55 @@ class Workout:
                   currentCell = currentSheet.cell(
                       row=row, column=col,
                       value=f"=IFERROR(IF(SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row})>0, SUM({col_letter}{begin_input_row}:{col_letter}{end_input_row}), \"...\"), \"N/A\")"
+                  )
+
+                  self.set_style(
+                      currentSheet, currentCell, col,
+                      fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
+                      size=12, width=8, font='Helvetica', bold=False
+                  )
+
+                  currentCell.alignment = ALIGNMENT
+
+                  if col == VOLUME_HEADERS['Int %']['ColumnNumber']:
+                      currentCell.number_format = '0%'
+
+                  # Set next column
+                  col += 1
+                  count += 1
+
+                  if count == VOLUME_LENGTH:
+                      break
+
+
+  def generate_maxes_row(self, row: int, col: int, currentSheet: object, sets: int) -> object:
+
+              currentCell = currentSheet.cell(
+                  row=row, column=col, value=f"Maxes"
+              )
+
+              self.set_style(
+                  currentSheet, currentCell, col,
+                  fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
+                  size=12, width=15, font='Helvetica', bold=True
+              )
+
+              col += 1
+
+              # Get first row of user inputs [ Load ] [ Reps ], etc.
+              begin_input_row = row - sets - 1
+              # Get last input row [ Load ] [ Reps ], etc.
+              end_input_row = row - 2
+              count = 1
+
+              for input_row in range(begin_input_row, begin_input_row + sets):
+
+                  col_letter = get_column_letter(col)
+
+                  currentCell = currentSheet.cell(
+                      row=row, column=col,
+                      value=f"=IFERROR(MAX({col_letter}{begin_input_row}:{col_letter}{end_input_row}), \"...\")"
+                      #E.g. IFERROR(MAX(C12:C16), "...")
                   )
 
                   self.set_style(
