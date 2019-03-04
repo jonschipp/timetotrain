@@ -2,10 +2,9 @@ from openpyxl import Workbook
 from openpyxl.styles import colors
 from openpyxl.styles import Alignment, Color
 from openpyxl.utils import get_column_letter, column_index_from_string
-import datetime
 import Style as StyleSettings
 from Style import Style
-
+import datetime
 
 # TODO: Calculate these numbers in dynamically
 COLUMN_LENGTH = 7 # The length of each day/slot, determines overall alignment

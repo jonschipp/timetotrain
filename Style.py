@@ -1,21 +1,24 @@
 from openpyxl.styles import colors
 from openpyxl.styles import Alignment, Border, Color, Font, PatternFill, Protection, Side
 from openpyxl.utils import get_column_letter, column_index_from_string
+import Workout
 
-
-COLOR_WHITE='00FFFFFF'
-COLOR_LIGHTBLACK='00282828'
-COLOR_DARKGREY='00505050'
-COLOR_DARKRED='00600000'
-
-ALIGNMENT = Alignment(
-    wrap_text=True, horizontal="center", vertical="center"
-)
 
 class Style:
 
+  class Settings:
+  
+    WHITE='00FFFFFF'
+    LIGHTBLACK='00282828'
+    DARKGREY='00505050'
+    DARKRED='00600000'
+    
+    ALIGNMENT = Alignment(
+        wrap_text=True, horizontal="center", vertical="center"
+    )
 
-  def generate_header(self, row: int, col: int, currentSheet: object, heading: str = 'Header', value: str = 'Item') -> object:
+  @staticmethod
+  def generate_header(row: int, col: int, currentSheet: object, heading: str = 'Header', value: str = 'Item') -> object:
               # Add horizontal header
               # [ Day 1 ]
               currentSheet.merge_cells(
@@ -30,7 +33,8 @@ class Style:
               return currentCell
 
 
-  def generate_block(self, row: int, col: int, currentSheet: object, value: str = 'Item') -> object:
+  @staticmethod
+  def generate_block(row: int, col: int, currentSheet: object, value: str = 'Item') -> object:
               # Add a single cell header
               # [ Block ]
 
@@ -38,7 +42,7 @@ class Style:
                   row=row, column=col, value=f"{value}"
               )
 
-              self.set_style(
+              Style.set_style(
                   currentSheet, currentCell, col,
                   fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
                   size=18, width=20, font='Helvetica', bold=True
@@ -49,7 +53,8 @@ class Style:
               return currentCell
 
 
-  def generate_sheet_banner(self, currentSheet: object, value: str = 'Item') -> None:
+  @staticmethod
+  def generate_sheet_banner(currentSheet: object, value: str = 'Item') -> None:
               # Get last column of spreadsheet for full banner
               max_col = currentSheet.max_column
 
@@ -62,7 +67,7 @@ class Style:
               currentCell = currentSheet.cell(
                   row=1, column=1, value=f"{value}"
               )
-              self.set_style(
+              Style.set_style(
                   currentSheet, currentCell, 1,
                   fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
                   size=28, width=10, font='Helvetica', bold=True
@@ -81,7 +86,7 @@ class Style:
               )
               currentCell.hyperlink = "https://github.com/jonschipp/timetotrain"
               currentCell.style = "Hyperlink"
-              self.set_style(
+              Style.set_style(
                   currentSheet, currentCell, 1,
                   fgColor=colors.WHITE, bgColor=COLOR_LIGHTBLACK,
                   size=12, width=10, font='Helvetica', bold=False
@@ -89,7 +94,8 @@ class Style:
               currentCell.alignment = ALIGNMENT
 
 
-  def generate_divide(self, row: int, col: int, currentSheet: object, heading: str = 'Header', style: str = 'manual') -> object:
+  @staticmethod
+  def generate_divide(row: int, col: int, currentSheet: object, heading: str = 'Header', style: str = 'manual') -> object:
               # Create divide with header and input
               # [         ][         ]
               # [ Program ][ <input> ]
@@ -109,7 +115,7 @@ class Style:
                   start_row=row, end_row=row, start_column=col+1, end_column=col+COLUMN_LENGTH
               )
 
-              self.set_style(
+              Style.set_style(
                   currentSheet, currentCell, col,
                   fgColor=colors.WHITE, bgColor=color,
                   size=12, width=20, font='Helvetica', bold=bold
@@ -120,7 +126,7 @@ class Style:
               )
 
               if style == 'formula':
-                  self.set_style(
+                  Style.set_style(
                       currentSheet, currentCell, col,
                       fgColor=colors.WHITE, bgColor=color,
                       size=12, width=20, font='Helvetica', bold=False
@@ -131,13 +137,15 @@ class Style:
               return currentCell
 
 
-  def set_formula(self, currentCell: object, formula: str) -> None:
+  @staticmethod
+  def set_formula(currentCell: object, formula: str) -> None:
         currentCell.value = formula
         currentCell.alignment = ALIGNMENT
 
 
 
-  def set_style(self, sheet: object, cell: object, col: int, fgColor: str, bgColor: str, size: int, width: int, font: str, bold: bool = False) -> object:
+  @staticmethod
+  def set_style(sheet: object, cell: object, col: int, fgColor: str, bgColor: str, size: int, width: int, font: str, bold: bool = False) -> object:
         # Set style
         font = Font(
             name=font, size=size, bold=bold, color=fgColor
@@ -153,7 +161,8 @@ class Style:
         return cell
 
 
-  def clear(self) -> None:
+  @staticmethod
+  def clear() -> None:
      # Make remaining of our cells white and borderless
      #white = PatternFill(fill_type='solid', fgColor=colors.WHITE)
      color = PatternFill(fill_type='solid', fgColor=COLOR_LIGHTBLACK)
