@@ -2,6 +2,7 @@ from openpyxl.styles import colors
 from openpyxl.styles import Alignment, Border, Color, Font, PatternFill, Protection, Side
 from openpyxl.utils import get_column_letter, column_index_from_string
 import Workout
+import datetime
 
 
 class Style:
@@ -18,12 +19,12 @@ class Style:
     )
 
   @staticmethod
-  def generate_header(row: int, col: int, currentSheet: object, heading: str = 'Header', value: str = 'Item') -> object:
+  def generate_header(row: int, col: int, length: int, currentSheet: object, heading: str = 'Header', value: str = 'Item') -> object:
               # Add horizontal header
               # [ Day 1 ]
               currentSheet.merge_cells(
                   start_row=row, end_row=row,
-                  start_column=col, end_column=col+COLUMN_LENGTH
+                  start_column=col, end_column=col+length
               )
 
               currentCell = currentSheet.cell(
@@ -44,11 +45,11 @@ class Style:
 
               Style.set_style(
                   currentSheet, currentCell, col,
-                  fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
+                  fgColor=colors.WHITE, bgColor=Style.Settings.DARKRED,
                   size=18, width=20, font='Helvetica', bold=True
               )
 
-              currentCell.alignment = ALIGNMENT
+              currentCell.alignment = Style.Settings.ALIGNMENT
 
               return currentCell
 
@@ -69,10 +70,10 @@ class Style:
               )
               Style.set_style(
                   currentSheet, currentCell, 1,
-                  fgColor=colors.WHITE, bgColor=COLOR_DARKRED,
+                  fgColor=colors.WHITE, bgColor=Style.Settings.DARKRED,
                   size=28, width=10, font='Helvetica', bold=True
               )
-              currentCell.alignment = ALIGNMENT
+              currentCell.alignment = Style.Settings.ALIGNMENT
 
               # Print date banner on second row
               date = datetime.datetime.now().strftime("%m/%d/%Y")
@@ -88,23 +89,23 @@ class Style:
               currentCell.style = "Hyperlink"
               Style.set_style(
                   currentSheet, currentCell, 1,
-                  fgColor=colors.WHITE, bgColor=COLOR_LIGHTBLACK,
+                  fgColor=colors.WHITE, bgColor=Style.Settings.LIGHTBLACK,
                   size=12, width=10, font='Helvetica', bold=False
               )
-              currentCell.alignment = ALIGNMENT
+              currentCell.alignment = Style.Settings.ALIGNMENT
 
 
   @staticmethod
-  def generate_divide(row: int, col: int, currentSheet: object, heading: str = 'Header', style: str = 'manual') -> object:
+  def generate_divide(row: int, col: int, length: int, currentSheet: object, heading: str = 'Header', style: str = 'manual') -> object:
               # Create divide with header and input
               # [         ][         ]
               # [ Program ][ <input> ]
               # [         ][         ]
-              color = COLOR_DARKGREY
+              color = Style.Settings.DARKGREY
               bold = False
 
               if style == 'formula':
-                  color = COLOR_DARKRED
+                  color = Style.Settings.DARKRED
                   bold = True
 
               currentCell = currentSheet.cell(
@@ -112,7 +113,7 @@ class Style:
               )
 
               currentSheet.merge_cells(
-                  start_row=row, end_row=row, start_column=col+1, end_column=col+COLUMN_LENGTH
+                  start_row=row, end_row=row, start_column=col+1, end_column=col+length
               )
 
               Style.set_style(
@@ -132,16 +133,9 @@ class Style:
                       size=12, width=20, font='Helvetica', bold=False
                   )
 
-              currentCell.alignment = ALIGNMENT
+              currentCell.alignment = Style.Settings.ALIGNMENT
 
               return currentCell
-
-
-  @staticmethod
-  def set_formula(currentCell: object, formula: str) -> None:
-        currentCell.value = formula
-        currentCell.alignment = ALIGNMENT
-
 
 
   @staticmethod
@@ -157,19 +151,5 @@ class Style:
         sheet.column_dimensions[get_column_letter(col)].width = width
         cell.font = font
         cell.fill = fill
-        cell.alignment = ALIGNMENT
+        cell.alignment = Style.Settings.ALIGNMENT
         return cell
-
-
-  @staticmethod
-  def clear() -> None:
-     # Make remaining of our cells white and borderless
-     #white = PatternFill(fill_type='solid', fgColor=colors.WHITE)
-     color = PatternFill(fill_type='solid', fgColor=COLOR_LIGHTBLACK)
-     for sheet in self.wb.worksheets:
-         for row in sheet:
-             for currentCell in row:
-                 if currentCell.alignment.horizontal == 'center':
-                     # Skip the cells we created
-                     continue
-                 currentCell.fill = color

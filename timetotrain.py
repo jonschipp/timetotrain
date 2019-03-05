@@ -2,6 +2,7 @@
 # Author: Jon Schipp <jonschipp@gmail.com, jschipp@illinois.edu>
 import argparse
 from Workout import Workout
+from Utils import Utils
 
 
 def usage():
@@ -36,6 +37,7 @@ def arguments():
 
   return(weeks, frequency, slots, sets, filename)
 
+
 def main():
   weeks, frequency, slots, sets, filename = arguments()
 
@@ -43,8 +45,9 @@ def main():
   w.generate_weeks(weeks=weeks)
   w.generate_frequency(frequency=frequency)
   w.generate_slots(slots=slots, sets=sets, frequency=frequency)
-  w.clear()
-  w.save(filename=filename)
+  Utils.clear(workbook=w.wb)
+  Utils.save(workbook=w.wb, filename=filename)
+
 
 if __name__ == "__main__":
   main()

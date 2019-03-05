@@ -1,10 +1,8 @@
 from openpyxl import Workbook
-from openpyxl.styles import colors
-from openpyxl.styles import Alignment, Color
 from openpyxl.utils import get_column_letter, column_index_from_string
-import Style as StyleSettings
 from Style import Style
-import datetime
+from Utils import Utils
+
 
 # TODO: Calculate these numbers in dynamically
 COLUMN_LENGTH = 7 # The length of each day/slot, determines overall alignment
@@ -71,12 +69,12 @@ class Workout:
               # Add day header e.g .[ Day 1 ] [ Day 2 ] [ Day 3 ]
 
               currentCell = Style.generate_header(
-                  begin_row, begin_col, currentSheet, heading='Day', value=day
+                  begin_row, begin_col, COLUMN_LENGTH, currentSheet, heading='Day', value=day
               )
 
               Style.set_style(
                   currentSheet, currentCell, begin_col,
-                  fgColor=Style.COLOR_WHITE, bgColor=Style.COLOR_LIGHTBLACK,
+                  fgColor=Style.Settings.WHITE, bgColor=Style.Settings.LIGHTBLACK,
                   size=42, width=20, font='Helvetica', bold=True
               )
 
@@ -142,11 +140,11 @@ class Workout:
                   # [ Exercise 2 ]
                   # [ Exercise 3 ]
                   currentCell = Style.generate_header(
-                      slot_rows['slot'], slot_col, currentSheet, heading='Exercise', value=slot
+                      slot_rows['slot'], slot_col, COLUMN_LENGTH, currentSheet, heading='Exercise', value=slot
                   )
                   Style.set_style(
                       currentSheet, currentCell, slot_col,
-                      fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKGREY,
+                      fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKGREY,
                       size=32, width=20, font='Helvetica'
                   )
                   slot_rows['slot'] += next_slot
@@ -158,11 +156,11 @@ class Workout:
                   # [ Exercise 2 ]
                   # [  Exercise  ]
                   currentCell = Style.generate_header(
-                      slot_rows['exercise'], slot_col, currentSheet, heading='Exercise', value=''
+                      slot_rows['exercise'], slot_col, COLUMN_LENGTH, currentSheet, heading='Exercise', value=''
                   )
                   Style.set_style(
                       currentSheet, currentCell, slot_col,
-                      fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKRED,
+                      fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKRED,
                       size=18, width=20, font='Helvetica', bold=False
                   )
                   slot_rows['exercise'] += next_slot
@@ -170,9 +168,9 @@ class Workout:
                   # [       Program      ]
                   # [        Notes       ]
                   # [        Target       ]
-                  Style.generate_divide(slot_rows['programming'], slot_col, currentSheet, heading='Program')
-                  Style.generate_divide(slot_rows['target'], slot_col, currentSheet, heading='Target')
-                  Style.generate_divide(slot_rows['notes'], slot_col, currentSheet, heading='Notes')
+                  Style.generate_divide(slot_rows['programming'], slot_col, COLUMN_LENGTH, currentSheet, heading='Program')
+                  Style.generate_divide(slot_rows['target'], slot_col, COLUMN_LENGTH, currentSheet, heading='Target')
+                  Style.generate_divide(slot_rows['notes'], slot_col, COLUMN_LENGTH, currentSheet, heading='Notes')
                   # TODO: Row height can be set in a better place
                   currentSheet.row_dimensions[slot_rows['programming']].height = 40
                   currentSheet.row_dimensions[slot_rows['target']].height = 40
@@ -211,19 +209,19 @@ class Workout:
                   self.generate_sums_row(slot_rows['sums'], slot_col, currentSheet, sets=sets)
                   # Add row for Volume (sets x reps) that reads the Reps sum - for convenience.
                   # Depends on value of slot_rows['sums'] before we increment it
-                  Style.set_formula(
-                      currentCell=Style.generate_divide(slot_rows['volume'], slot_col, currentSheet, heading='Volume', style='formula'),
+                  Utils.set_formula(
+                      currentCell=Style.generate_divide(slot_rows['volume'], slot_col, COLUMN_LENGTH, currentSheet, heading='Volume', style='formula'),
                       formula=f"={VOLUME_HEADERS['Reps']['ColumnLetter']}{slot_rows['sums']}"
                   )
                   slot_rows['sums'] += next_slot
 
-                  Style.set_formula(
-                      currentCell=Style.generate_divide(slot_rows['tonnage'], slot_col, currentSheet, heading='Tonnage', style='formula'),
+                  Utils.set_formula(
+                      currentCell=Style.generate_divide(slot_rows['tonnage'], slot_col, COLUMN_LENGTH, currentSheet, heading='Tonnage', style='formula'),
                       formula=self.generate_tonnage_formula(slot_rows['volume_input'], sets)
                   )
                   slot_rows['tonnage'] += next_slot
 
-                  Style.generate_divide(slot_rows['e1rm'], slot_col, currentSheet, heading='E1RM', style='manual')
+                  Style.generate_divide(slot_rows['e1rm'], slot_col, COLUMN_LENGTH, currentSheet, heading='E1RM', style='manual')
                   slot_rows['e1rm'] += next_slot
 
                   slot_rows['volume_input'] += next_slot
@@ -234,12 +232,12 @@ class Workout:
                   daily_rpe_row = currentSheet.max_row + 1
               if not session_rpe_row:
                   session_rpe_row = currentSheet.max_row + 2
-              Style.set_formula(
-                  currentCell=Style.generate_divide(daily_rpe_row, slot_col, currentSheet, heading='Average RPE', style='formula'),
+              Utils.set_formula(
+                  currentCell=Style.generate_divide(daily_rpe_row, slot_col, COLUMN_LENGTH, currentSheet, heading='Average RPE', style='formula'),
                   formula=f"=IFERROR(AVERAGEIF({VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}:{VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}, \"<>0\"), \"...\")"
               )
-              Style.set_formula(
-                  currentCell=Style.generate_divide(session_rpe_row, slot_col, currentSheet, heading='Session RPE', style='manual'),
+              Utils.set_formula(
+                  currentCell=Style.generate_divide(session_rpe_row, slot_col, COLUMN_LENGTH, currentSheet, heading='Session RPE', style='manual'),
                   formula=f""
               )
 
@@ -262,7 +260,7 @@ class Workout:
 
                   Style.set_style(
                       currentSheet, currentCell, col,
-                      fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKRED,
+                      fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKRED,
                       size=12, width=15, font='Helvetica', bold=True
                   )
                   # Set next column
@@ -281,7 +279,7 @@ class Workout:
 
                   Style.set_style(
                       currentSheet, currentCell, col,
-                      fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKGREY,
+                      fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKGREY,
                       size=12, width=8, font='Helvetica', bold=False
                   )
 
@@ -293,7 +291,7 @@ class Workout:
 
                       # Add intensity calculation based off E1RM
                       if col+item == VOLUME_HEADERS['Int %']['ColumnNumber']:
-                          Style.set_formula(
+                          Utils.set_formula(
                               currentCell=currentCell,
                               formula=f"=IF(ISBLANK({VOLUME_HEADERS['Load']['ColumnLetter']}{kwargs['e1rm_row']}), \"...\", {VOLUME_HEADERS['Load']['ColumnLetter']}{row}/{VOLUME_HEADERS['Load']['ColumnLetter']}{kwargs['e1rm_row']})"
                           )
@@ -312,12 +310,12 @@ class Workout:
 
                           # The first week which is 0 doesn't have a previous week..skip
                           if last_week > 0:
-                              Style.set_formula(
+                              Utils.set_formula(
                                   currentCell=currentCell,
                                   formula=formula
                               )
 
-                      currentCell.alignment = Style.ALIGNMENT
+                      currentCell.alignment = Style.Settings.ALIGNMENT
 
                   # Set next column
                   row += 1
@@ -341,7 +339,7 @@ class Workout:
                       #e.g. =IF(ISBLANK(L15), "...", IFERROR(ABS(SUM(L15, -10)), "..."))
                   )
 
-                  currentCell.alignment = Style.ALIGNMENT
+                  currentCell.alignment = Style.Settings.ALIGNMENT
 
                   row += 1
 
@@ -356,7 +354,7 @@ class Workout:
 
               Style.set_style(
                   currentSheet, currentCell, col,
-                  fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKRED,
+                  fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKRED,
                   size=12, width=15, font='Helvetica', bold=True
               )
 
@@ -385,11 +383,11 @@ class Workout:
 
                   Style.set_style(
                       currentSheet, currentCell, col,
-                      fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKRED,
+                      fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKRED,
                       size=12, width=8, font='Helvetica', bold=False
                   )
 
-                  currentCell.alignment = Style.ALIGNMENT
+                  currentCell.alignment = Style.Settings.ALIGNMENT
 
                   if col == VOLUME_HEADERS['Int %']['ColumnNumber']:
                       currentCell.number_format = '0%'
@@ -405,7 +403,7 @@ class Workout:
 
               Style.set_style(
                   currentSheet, currentCell, col,
-                  fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKRED,
+                  fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKRED,
                   size=12, width=15, font='Helvetica', bold=True
               )
 
@@ -428,11 +426,11 @@ class Workout:
 
                   Style.set_style(
                       currentSheet, currentCell, col,
-                      fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKRED,
+                      fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKRED,
                       size=12, width=8, font='Helvetica', bold=False
                   )
 
-                  currentCell.alignment = Style.ALIGNMENT
+                  currentCell.alignment = Style.Settings.ALIGNMENT
 
                   if col == VOLUME_HEADERS['Int %']['ColumnNumber']:
                       currentCell.number_format = '0%'
@@ -449,7 +447,7 @@ class Workout:
 
               Style.set_style(
                   currentSheet, currentCell, col,
-                  fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKRED,
+                  fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKRED,
                   size=12, width=15, font='Helvetica', bold=True
               )
 
@@ -472,11 +470,11 @@ class Workout:
 
                   Style.set_style(
                       currentSheet, currentCell, col,
-                      fgColor=Style.COLOR_WHITE, bgColor=COLOR_DARKRED,
+                      fgColor=Style.Settings.WHITE, bgColor=Style.Settings.DARKRED,
                       size=12, width=8, font='Helvetica', bold=False
                   )
 
-                  currentCell.alignment = Style.ALIGNMENT
+                  currentCell.alignment = Style.Settings.ALIGNMENT
 
                   if col == VOLUME_HEADERS['Int %']['ColumnNumber']:
                       currentCell.number_format = '0%'
@@ -513,16 +511,6 @@ class Workout:
       for k, n in  zip(VOLUME_HEADERS.keys(), range(0, VOLUME_LENGTH)):
           VOLUME_HEADERS[k]['ColumnNumber'] = BEGIN_COLUMN + n
           VOLUME_HEADERS[k]['ColumnLetter'] = get_column_letter(BEGIN_COLUMN + n)
-
-
-  def save(self, filename: str) -> str:
-      if not filename:
-          # Set default
-          filename = 'workout.xlsx'
-
-      self.wb.save(filename)
-      print(f"Writing program to {filename}")
-      return filename
 
 
   def test(self, msg: str) -> str:
