@@ -41,12 +41,12 @@ def arguments():
 def main():
   weeks, frequency, slots, sets, filename = arguments()
 
-  w = Workout()
-  w.generate_weeks(weeks=weeks)
-  w.generate_frequency(frequency=frequency)
-  w.generate_slots(slots=slots, sets=sets, frequency=frequency)
-  Utils.clear(workbook=w.wb)
-  Utils.save(workbook=w.wb, filename=filename)
+  Program = Workout()
+  Program.generate_weeks(weeks=weeks)
+  Program.generate_frequency(frequency=frequency)
+  Program.generate_slots(slots=slots, sets=sets, frequency=frequency)
+  Utils.clear(workbook=Program.wb)
+  Utils.save(workbook=Program.wb, filename=filename)
 
 
 if __name__ == "__main__":

@@ -25,3 +25,18 @@ Writing program to train.xlsx
 pip3 install openpyxl
 git clone https://github.com/jonschipp/timetotrain
 ```
+
+## Metrics
+
+The generated template includes the following metrics.
+
+* Sums for Load, Reps, RIR, RPE, Avg Velocity, and Int % - calculated per exercise slot
+* Averages for Load, Reps, RIR, RPE, Avg Velocity, and Int % - calculated per exercise slot
+* Volume (Sets x Reps) - calculated per exercise slot
+* Tonnage (Sets x Reps x Load) - calculated per exercise slot
+* E1RM - manual input
+* Intensity Percentage per set (Int % of E1RM) - Requires manual E1RM input
+* Session RPE - manual input
+* Average RPE - Average RPE of all exercises slots in a day
+
+More to come!
