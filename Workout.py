@@ -339,8 +339,9 @@ class Workout:
 
                   currentCell = currentSheet.cell(
                       row=row, column=col,
-                      value=f"=IF(ISBLANK({col_rpe_letter}{input_row}), \"...\", IFERROR(ABS(SUM({col_rpe_letter}{input_row}, −10)), \"N/A\"))"
-                      #e.g. =IF(ISBLANK(L15), "...", IFERROR(ABS(SUM(L15, -10)), "..."))
+                      # Google Sheets: e.g. =IF(ISBLANK(E12),"...", IFERROR(ABS(MINUS(E12, 10)), "N/A"))
+                      value=f"=IF(ISBLANK({col_rpe_letter}{input_row}), \"...\", IFERROR(ABS(MINUS({col_rpe_letter}{input_row}, 10)), \"N/A\"))"
+                      # Excel: e.g. =IF(ISBLANK(L15), "...", IFERROR(ABS(SUM(L15, -10)), "..."))
                   )
 
                   currentCell.alignment = Style.Settings.ALIGNMENT
