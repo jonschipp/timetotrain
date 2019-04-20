@@ -1,8 +1,8 @@
 # Time to Train
 
-A generator for customizable workout templates using spreadsheets.
+A generator for customizable workout templates using spreadsheets. The spreadsheets are compatible with Google Sheets.
 
-This is a new project which will make it incredibly easy to create exercise programs.
+This is a new project which will make it incredibly easy to create exercise programs. Import them in Google Sheets and share with your clients and friends.
 
 ```
 $ ./timetotrain.py --weeks 8 --frequency 3 --slots 3 --sets 10 --filename train.xlsx
