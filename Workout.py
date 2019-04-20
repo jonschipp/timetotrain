@@ -110,6 +110,7 @@ class Workout:
           # These are used to track if for last rows in day
           daily_rpe_row = None
           session_rpe_row = None
+          internal_load_row = None
 
           for day in range(1, frequency + 1):
 
@@ -131,6 +132,8 @@ class Workout:
               }
               # Used to get the next exercise slot section via its row number
               next_slot=len(slot_rows)+sets
+              # Keep track of set range [("C12", "C21"), ..] for Internal Load formula
+              set_range=[]
 
               for slot in range(1, slots + 1):
 
@@ -188,6 +191,7 @@ class Workout:
                   # [ Set 1 ] [ <input> ]
                   # [ Set 2 ] [ <input> ]
                   self.generate_volume_input(slot_rows['volume_input'], slot_col, currentSheet, sets=sets, e1rm_row=slot_rows['e1rm'])
+                  set_range.append((f"{VOLUME_HEADERS['Load']['ColumnLetter']}{slot_rows['volume_input']}", f"{VOLUME_HEADERS['Load']['ColumnLetter']}{slot_rows['volume_input']+sets-1}"))
 
                   # TODO: We should not be be referencing numbers, it's barely readable
                   self.generate_rir_to_rpe(slot_rows['volume_input'], slot_col+4, currentSheet, sets=sets)
@@ -235,6 +239,8 @@ class Workout:
                   daily_rpe_row = currentSheet.max_row + 1
               if not session_rpe_row:
                   session_rpe_row = currentSheet.max_row + 2
+              if not internal_load_row:
+                  internal_load_row = currentSheet.max_row + 3
               Utils.set_formula(
                   currentCell=Style.generate_divide(daily_rpe_row, slot_col, COLUMN_LENGTH, currentSheet, heading='Average RPE', style='formula'),
                   formula=f"=IFERROR(AVERAGEIF({VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}:{VOLUME_HEADERS['RPE']['ColumnLetter']}{avg_row}, \"<>0\"), \"...\")"
@@ -242,6 +248,10 @@ class Workout:
               Utils.set_formula(
                   currentCell=Style.generate_divide(session_rpe_row, slot_col, COLUMN_LENGTH, currentSheet, heading='Session RPE', style='manual'),
                   formula=f""
+              )
+              Utils.set_formula(
+                  currentCell=Style.generate_divide(internal_load_row, slot_col, COLUMN_LENGTH, currentSheet, heading='Internal Load (AU)', style='formula'),
+                  formula=self.generate_internal_load_formula(f"{VOLUME_HEADERS['Load']['ColumnLetter']}{session_rpe_row}", set_range)
               )
 
               # Update starting columns and start writing in column for next day
@@ -487,8 +497,7 @@ class Workout:
                   # Set next column
                   col += 1
 
-
-  def generate_tonnage_formula(self, row, sets) -> None:
+  def generate_tonnage_formula(self, row, sets) -> str:
       #=SUM(PRODUCT(C34:C34),PRODUCT(C35:C35),PRODUCT(C36:C36)...)
       l = []
 
@@ -504,7 +513,7 @@ class Workout:
       )
       return formula
 
-  def generate_e1rm_formula(self, row, sets) -> None:
+  def generate_e1rm_formula(self, row, sets) -> str:
       # Epley equation W * (1 + r/30)
       # $ echo "315 * (1 + 5/30)" | bc -l
       # 367.49999999999999999790
@@ -520,6 +529,17 @@ class Workout:
           f"{VOLUME_HEADERS['Load']['ColumnLetter']}{first_row}:{VOLUME_HEADERS['Reps']['ColumnLetter']}{last_row}, 2, FALSE), 30))), \"...\")"
       )
 
+      return formula
+
+  def generate_internal_load_formula(self, session_cell, set_range) -> str:
+      # =IF(ISBLANK(C52), "...", PRODUCT(C52, SUM(COUNTIF(C12:C21, ">0"), COUNTIF(C35:C44, ">0"))))
+
+      formula = '=IF(ISBLANK({}), {}, PRODUCT({}, SUM({})))'.format(
+          f"{session_cell}",
+          f"\"...\"",
+          f"{session_cell}",
+          f"".join('COUNTIF({}:{}, ">0"), '.format(j,k) for j,k in set_range).rstrip(", '"),
+      )
       return formula
 
   def update_volume_headers(self) -> None:

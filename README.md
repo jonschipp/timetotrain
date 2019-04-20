@@ -36,7 +36,8 @@ The generated template includes the following metrics.
 * Tonnage (Sets x Reps x Load) - calculated per exercise slot
 * E1RM - [Epley equation](https://www.vcalc.com/wiki/vCalc/Epley+Formula+%281+rep+max%29)
 * Intensity Percentage per set (Int % of E1RM) - Requires manual E1RM input
-* Session RPE - manual input
 * Average RPE - Average RPE of all exercise slots in a day
+* Session RPE - manual input
+* Internal Load (Sets * Session RPE) - Used to track training adjustments. Keep below a ~10% load increase on average week to week. See "Nutritional and Logistical Strategies for Reducing Illness", Eric Helms, MASS Research Review Vol. 3, Issue 2, February 2019
 
 More to come!
