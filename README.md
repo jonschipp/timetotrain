@@ -34,9 +34,9 @@ The generated template includes the following metrics.
 * Averages for Load, Reps, RIR, RPE, Avg Velocity, and Int % - calculated per exercise slot
 * Volume (Sets x Reps) - calculated per exercise slot
 * Tonnage (Sets x Reps x Load) - calculated per exercise slot
-* E1RM - manual input
+* E1RM - [Epley equation](https://www.vcalc.com/wiki/vCalc/Epley+Formula+%281+rep+max%29)
 * Intensity Percentage per set (Int % of E1RM) - Requires manual E1RM input
 * Session RPE - manual input
-* Average RPE - Average RPE of all exercises slots in a day
+* Average RPE - Average RPE of all exercise slots in a day
 
 More to come!

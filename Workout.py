@@ -221,9 +221,12 @@ class Workout:
                   )
                   slot_rows['tonnage'] += next_slot
 
-                  Style.generate_divide(slot_rows['e1rm'], slot_col, COLUMN_LENGTH, currentSheet, heading='E1RM', style='manual')
-                  slot_rows['e1rm'] += next_slot
+                  Utils.set_formula(
+                      currentCell=Style.generate_divide(slot_rows['e1rm'], slot_col, COLUMN_LENGTH, currentSheet, heading='E1RM', style='manual'),
+                      formula=self.generate_e1rm_formula(slot_rows['volume_input'], sets)
+                  )
 
+                  slot_rows['e1rm'] += next_slot
                   slot_rows['volume_input'] += next_slot
                   slot_rows['volume'] += next_slot
 
@@ -499,6 +502,23 @@ class Workout:
       )
       return formula
 
+  def generate_e1rm_formula(self, row, sets) -> None:
+      # Epley equation W * (1 + r/30)
+      # $ echo "315 * (1 + 5/30)" | bc -l
+      # 367.49999999999999999790
+      # E.g. =MAX(C12:C21)*(1+VLOOKUP(MAX(C12:C21),C:D,2, FALSE)/30)
+
+      first_row = row
+      last_row = row + sets - 1
+
+      # =IFERROR(PRODUCT(MAX(C12:C21), SUM(1, DIVIDE(VLOOKUP(MAX(C12:C21), C12:D21, 2,FALSE), 30))), "...")
+      formula = '{}{}{}'.format(
+          f"=IFERROR(PRODUCT(MAX({VOLUME_HEADERS['Load']['ColumnLetter']}{first_row}:{VOLUME_HEADERS['Load']['ColumnLetter']}{last_row}), ",
+          f"SUM(1, DIVIDE(VLOOKUP(MAX({VOLUME_HEADERS['Load']['ColumnLetter']}{first_row}:{VOLUME_HEADERS['Load']['ColumnLetter']}{last_row}), ",
+          f"{VOLUME_HEADERS['Load']['ColumnLetter']}{first_row}:{VOLUME_HEADERS['Reps']['ColumnLetter']}{last_row}, 2, FALSE), 30))), \"...\")"
+      )
+
+      return formula
 
   def update_volume_headers(self) -> None:
       for k in VOLUME_HEADERS.keys():
