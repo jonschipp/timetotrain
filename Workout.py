@@ -226,7 +226,7 @@ class Workout:
                   slot_rows['tonnage'] += next_slot
 
                   Utils.set_formula(
-                      currentCell=Style.generate_divide(slot_rows['e1rm'], slot_col, COLUMN_LENGTH, currentSheet, heading='E1RM', style='manual'),
+                      currentCell=Style.generate_divide(slot_rows['e1rm'], slot_col, COLUMN_LENGTH, currentSheet, heading='E1RM', style='formula'),
                       formula=self.generate_e1rm_formula(slot_rows['volume_input'], sets)
                   )
 
